@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <title>macOS</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="icon" href="./images/AppleInternalIcon 2.png" />
+    <meta charset="utf-8" />
+    <style>
+        body {
+            display: flex;
+            justify-content: end;
+            align-items: center;
+            flex-direction: column;
+            margin: 0;
+            background-image: url(./images/Sequoia-Day.jpg);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+        }
+
+        @keyframes backgroundAnimation {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        #user {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        #user img {
+            width: 96px;
+            height: 96px;
+        }
+
+        #pwd input {
+            border-radius: 10px;
+            border: none;
+            padding: 4px;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 35%;
+            transition: transform 0.125s ease-in-out;
+            outline: none;
+        }
+
+        #pwd input:hover {
+            border: none;
+            outline: none;
+        }
+
+        h3 {
+            color: #fff;
+            margin-bottom: 0.6%;
+            margin-top: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.35);
+        }
+
+        #time {
+            text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+        }
+
+        #date {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 36px;
+            margin: 0;
+            margin-top: 6%;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.35);
+        }
+
+        #now {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 124px;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.35);
+        }
+
+        .bg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #000;
+            animation: backgroundAnimation 1.75s forwards;
+            z-index: 2;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #svg-frame {
+            width: 21px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            position: absolute;
+        }
+
+        #alert-window {
+            width: 260px;
+            height: 232px;
+            box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.05), 0 38px 90px 0 rgba(0, 0, 0, 0.25), 0 0 1px 0 rgba(0, 0, 0, 0.60), inset 0 0 3px 0 rgba(255, 255, 255, 0.10);
+            border-radius: 10px;
+            background: #fbfbfb6f;
+            font-size: 13px;
+            text-align: center;
+            line-height: 16px;
+            position: absolute;
+            top: calc(50% - 132.5px);
+            left: calc(50% - 130px);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            z-index: 3;
+            opacity: 0;
+            animation: Alert 0.5s forwards ease-in-out, opacityBegin 0.525s forwards ease-in-out;
+            animation-delay: 0.75s;
+        }
+
+        #alert-window img {
+            width: 24.61%;
+            height: 24.15%;
+            margin-top: 7.5%;
+            border-radius: 16px;
+            opacity: 0;
+            animation: opacityBegin 0.25s forwards ease-in-out;
+            animation-delay: 0.75s;
+        }
+
+        #alert-window #title {
+            font-size: 13px;
+            font-weight: bold;
+            margin: 0;
+            margin-top: 7.5%;
+            opacity: 0;
+            animation: opacityBegin 0.25s forwards ease-in-out;
+            animation-delay: 0.75s;
+        }
+
+        #alert-window #des {
+            font-size: 13px;
+            font-weight: normal;
+            margin: 0;
+            margin-top: 3.77%;
+            opacity: 0;
+            animation: opacityBegin 0.25s forwards ease-in-out;
+            animation-delay: 0.75s;
+        }
+
+        #alert-window #btn {
+            font-size: 13px;
+            text-align: center;
+            line-height: 16px;
+            width: 87.69230769231%;
+            height: 9.811320754717%;
+            position: absolute;
+            top: 69.8%;
+            left: calc(50% - 87.69230769231% / 2);
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            background-image: linear-gradient(179deg, rgba(255, 255, 255, 0.17) 0%, rgba(255, 255, 255, 0.00) 96%), linear-gradient(to bottom right, #2277ff, #0c61ff);
+            background-size: 100% 100%;
+            color: #000000;
+        }
+
+        #alert-window #btn p {
+            margin: 0;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg" id="bg"></div>
+    <div id="time">
+        <h2 id="date">00月00日 周零</h2>
+        <h1 id="now">00:00</h1>
+    </div>
+    <div id="user">
+        <img src="./images/UsersIcon 2.png">
+        <h3>Webintosh</h3>
+    </div>
+    <div id="pwd">
+<input type="password" id="password" placeholder="Enter password" onkeydown="checkPassword(event)">
+    </div>
+    <div id="svg-frame" style="opacity: 0;">
+        <svg width="17px" height="16px" viewBox="0 0 17 16" version="1.1" xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink" id="svg">
+            <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g id="Controls/Progress/Indeterminate-Spinner" transform="translate(0.5, 0)" fill="#000000">
+                    <g id="Group" transform="translate(-0.5, 0)">
+                        <rect id="rect1" fill-opacity="0.8" x="7.5" y="0" width="2" height="5" rx="1"></rect>
+                        <rect id="rect2" fill-opacity="0.1"
+                            transform="translate(12.3891, 4.1109) rotate(45) translate(-12.3891, -4.1109)"
+                            x="11.3890873" y="1.6109127" width="2" height="5" rx="1"></rect>
+                        <rect id="rect3" fill-opacity="0.2" transform="translate(14, 8) rotate(90) translate(-14, -8)"
+                            x="13" y="5.5" width="2" height="5" rx="1"></rect>
+                        <rect id="rect4" fill-opacity="0.3"
+                            transform="translate(12.3891, 11.8891) rotate(135) translate(-12.3891, -11.8891)"
+                            x="11.3890873" y="9.3890873" width="2" height="5" rx="1"></rect>
+                        <rect id="rect5" fill-opacity="0.4"
+                            transform="translate(8.5, 13.5) rotate(180) translate(-8.5, -13.5)" x="7.5" y="11" width="2"
+                            height="5" rx="1"></rect>
+                        <rect id="rect6" fill-opacity="0.5"
+                            transform="translate(4.6109, 11.8891) rotate(225) translate(-4.6109, -11.8891)"
+                            x="3.6109127" y="9.3890873" width="2" height="5" rx="1"></rect>
+                        <rect id="rect7" fill-opacity="0.6" transform="translate(3, 8) rotate(270) translate(-3, -8)"
+                            x="2" y="5.5" width="2" height="5" rx="1"></rect>
+                        <rect id="rect8" fill-opacity="0.7"
+                            transform="translate(4.6109, 4.1109) rotate(315) translate(-4.6109, -4.1109)" x="3.6109127"
+                            y="1.6109127" width="2" height="5" rx="1"></rect>
+                    </g>
+                </g>
+            </g>
+        </svg>
+    </div>
+    <noscript id="alert-window" style="animation-delay: 0s; z-index: 1000;">
+        <img style="animation: none; opacity: 1;" src="./images/AlertStopIcon 3.png" />
+        <p id="title" style="animation: none; opacity: 1;">No!!!</p>
+        <p id="des" style="animation: none; opacity: 1;">You disabled JavaScript.</p>
+        <div id="btn" onclick="window.location = 'about:blank'">
+            <p onclick="window.location = 'about:blank'">Exit</p>
+        </div>
+    </noscript>
+    <script>
+        let bg = document.getElementById("bg");
+        
+        function getURLParams() {
+            const searchParams = window.location.search.substring(1).split('&');
+            const params = {};
+            
+            for (const param of searchParams) {
+                const [key, value] = param.split('=');
+                params[key] = value;
+            }
+            
+            return params;
+        }
+        
+        const urlParams = getURLParams();
+
+        if (urlParams.bg != 'show') {
+            bg.style.display = `none`;
+        }
+
+        const rects = document.querySelectorAll('rect');
+        let opacityValues = [0.8, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7];
+        const fps = 30;
+        const frameDuration = 1000 / fps;
+
+        function updateOpacity() {
+            opacityValues = opacityValues.map(value => value - 0.1);
+            opacityValues = opacityValues.map(value => value < 0 ? 0.8 : value);
+
+            rects.forEach((rect, index) => {
+                rect.setAttribute('fill-opacity', opacityValues[index]);
+            });
+        }
+
+        let lastFrameTime = performance.now();
+
+        function animate() {
+            const now = performance.now();
+            const deltaTime = now - lastFrameTime;
+
+            if (deltaTime >= frameDuration) {
+                updateOpacity();
+                lastFrameTime = now;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        function checkPassword(event) {
+            if (event.keyCode === 13) { // Check if the Enter key is pressed
+                var passwordInput = document.getElementById("password");
+                var spinner = document.getElementById("svg-frame");
+                var password = passwordInput.value;
+                if (password !== "Ventura") {
+                    if (password !== "Sonoma") {
+                        if (password !== "Sequoia") {
+                            spinner.style.opacity = 1;
+                            spinner.style.top = `97%`;
+                            spinner.style.left = `calc(50% - 10.5px)`;
+                            setTimeout(function () {
+                                passwordInput.style.transform = "translateX(-60px)";
+                                setTimeout(function () {
+                                    passwordInput.style.transform = "translateX(120px)";
+                                }, 50);
+                                setTimeout(function () {
+                                    passwordInput.style.transform = "translateX(0)";
+                                    passwordInput.style.transform = "translateX(-40px)";
+                                    setTimeout(function () {
+                                        passwordInput.style.transform = "translateX(80px)";
+                                    }, 50);
+                                    setTimeout(function () {
+                                        passwordInput.style.transform = "translateX(0)";
+                                        passwordInput.style.transform = "translateX(-20px)";
+                                        setTimeout(function () {
+                                            passwordInput.style.transform = "translateX(40px)";
+                                        }, 50);
+                                        setTimeout(function () {
+                                            passwordInput.style.transform = "translateX(0)";
+                                        }, 100);
+                                    }, 100);
+                                }, 100);
+                                spinner.style.opacity = 0;
+                            }, 1000)
+                        } else {
+                            passwordInput.style.opacity = 0;
+                            spinner.style.opacity = 1;
+                            spinner.style.top = `94%`;
+                            spinner.style.left = `calc(50% - 10.5px)`;
+                            setTimeout(function () {
+                                window.location.href = "desktop.html";
+                            }, 1750);
+                        }
+                    } else {
+                        passwordInput.style.opacity = 0;
+                        spinner.style.opacity = 1;
+                        spinner.style.top = `94%`;
+                        spinner.style.left = `calc(50% - 10.5px)`;
+                        setTimeout(function () {
+                            window.location.href = "desktop.html";
+                        }, 1750);
+                    }
+                } else {
+                    passwordInput.style.opacity = 0;
+                    spinner.style.opacity = 1;
+                    spinner.style.top = `94%`;
+                    spinner.style.left = `calc(50% - 10.5px)`;
+                    setTimeout(function () {
+                        window.location.href = "desktop.html";
+                    }, 1750);
+                }
+            }
+        }
+
+        setTimeout(function () {
+            bg.style.zIndex = -1;
+            bg.style.opacity = 0;
+        }, 1750)
+
+
+function updateTime() {
+    var now = new Date();
+    var hours = now.getHours().toString().padStart(2, '0');
+    var minutes = now.getMinutes().toString().padStart(2, '0');
+    var timeString = hours + ':' + minutes;
+    
+    let dayOfWeek = now.getDay();
+    let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    let dayName = days[dayOfWeek];
+    
+    let day = now.getDate(); // Day of the month (1-31)
+    let month = now.getMonth() + 1; // Month (1-12)
+
+    document.getElementById('now').textContent = timeString;
+    document.getElementById('date').textContent = `${day}/${month} ${dayName}`;
+}
+
+
+
+        setInterval(updateTime, 400);
+
+        updateTime();
+    </script>
+</body>
+
+</html>
