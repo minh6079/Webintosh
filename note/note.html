@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title" data-i18n="title">Notes</h1>
+            <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+                <svg class="menu-dots-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                    <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
+                </svg>
+                <svg class="menu-done-icon" id="menuDoneIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                    <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            
+            <!--dropdown menu-->
+            <div class="dropdown-menu" id="dropdownMenu">
+            <div class="menu-item" id="menuTheme">
+            <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle class="theme-icon-menu sun-icon-menu" cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+                    <path class="theme-icon-menu sun-icon-menu" d="M12 1V3M12 21V23M1 12H3M21 12H23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12L3 12M23 12L21 12M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path class="theme-icon-menu moon-icon-menu" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="menu-text" data-i18n="toggleTheme">Toggle theme</span>
+            </div>
+            <div class="menu-item" id="menuLang">
+                <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 12h20M2 12c0 5.523 4.477 10 10 10s10-4.477 10-10S17.523 2 12 2 2 6.477 2 12z" stroke="currentColor" stroke-width="2"/>
+                    <path d="M7 12c0 2.761 2.239 5 5 5s5-2.239 5-5-2.239-5-5-5-5 2.239-5 5z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span class="menu-text" data-i18n="switchLanguage">Switch language</span>
+                <span class="menu-value" id="menuLangValue">EN</span>
+            </div>
+            <div class="menu-item" id="menuView">
+                <div class="menu-icon">
+                    <svg class="list-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <svg class="gallery-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </div>
+                <span class="menu-text" data-i18n="showAsGallery">Show as gallery</span>
+            </div>
+            <div class="menu-item" id="menuSelect">
+                <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                    <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="menu-text" data-i18n="select">Select</span>
+            </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="pinned-section" id="pinnedSection" style="display: none;">
+                <button class="pinned-section-header" id="pinnedSectionHeader">
+                    <h2 class="section-title" data-i18n="pinnedNotes">Pinned notes</h2>
+                    <svg class="accordion-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 9l6 6 6-6" stroke="#FFD60A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="pinned-section-content" id="pinnedSectionContent">
+                    <div class="notes-container" id="pinnedContainer"></div>
+                </div>
+            </div>
+
+            <div class="notes-section" id="notesSection">
+                <div class="notes-container" id="notesContainer">
+                    <!--notes will be added via javascript-->
+                </div>
+
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">📝</div>
+                    <p class="empty-text" data-i18n="noNotes">No notes</p>
+                    <p class="empty-subtext" data-i18n="emptySubtext">Click + to create a new note</p>
+                </div>
+
+                <div class="no-results-state" id="noResultsState">
+                    <svg class="no-results-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                        <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <p class="no-results-text" data-i18n="noResults">No results found for this query</p>
+                    <p class="no-results-hint" data-i18n="noResultsHint">Check spelling or try a different search term</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-container fixed-bottom" id="searchContainer">
+            <div class="search-input-wrapper">
+                <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                    <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <input type="text" class="search-input" id="searchInput" data-i18n-placeholder="searchPlaceholder" placeholder="Search notes...">
+            </div>
+            <button class="add-btn" id="addBtn" aria-label="Add note">
+                <!--plus icon (default)-->
+                <svg class="add-icon add-icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!--cross icon (shown when search has text)-->
+                <svg class="add-icon add-icon-clear" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                    <path d="M15 9L9 15M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div class="selection-buttons" id="selectionButtons" style="display: none; gap: 12px;">
+                <button class="select-all-btn" id="selectAllBtn" data-i18n="selectAll">Select all</button>
+                <button class="deselect-all-btn" id="deselectAllBtn" style="display: none;" data-i18n="deselectAll">Deselect all</button>
+            </div>
+        </div>
+    </div>
+
+    <!--modal window for editing-->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="modal-close" id="closeModal">✕</button>
+                <h2 class="modal-title" id="modalTitle" data-i18n="newNote">New note</h2>
+                <button class="modal-save" id="saveNote" data-i18n="save">Save</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="note-title-input" id="noteTitleInput" data-i18n-placeholder="titlePlaceholder" placeholder="Title">
+                <textarea class="note-content-input" id="noteContentInput" data-i18n-placeholder="contentPlaceholder" placeholder="Note text..."></textarea>
+            </div>
+            <div class="modal-actions" id="modalActions" style="display: none;">
+                <button class="modal-action-btn pin-action-btn" id="modalPinBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 17v5M8 2v3l-4 4v2h16v-2l-4-4V2H8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="modal-action-label" data-i18n="pin">Pin</span>
+                </button>
+                <button class="modal-action-btn duplicate-action-btn" id="modalDuplicateBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="5" y="5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span class="modal-action-label" data-i18n="duplicate">Duplicate</span>
+                </button>
+                <button class="modal-action-btn delete-action-btn" id="modalDeleteBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="modal-action-label" data-i18n="delete">Delete</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!--confirmation modal-->
+    <div class="confirm-modal" id="confirmModal">
+        <div class="confirm-content">
+            <div class="confirm-message" id="confirmMessage" data-i18n="confirmDelete">Are you sure?</div>
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="confirmCancel" data-i18n="cancel">Cancel</button>
+                <button class="confirm-btn confirm-ok" id="confirmOk" data-i18n="ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!--notifications-->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/state.js"></script>
+    <script src="js/dom.js"></script>
+    <script src="js/localization.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/notes.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
+

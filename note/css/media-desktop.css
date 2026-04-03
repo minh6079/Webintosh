@@ -1,0 +1,39 @@
+/*Desktop devices (min-width: 1025px)*/
+@media (min-width: 1025px) {
+    .container {
+        max-width: 900px;
+    }
+    
+    .notes-container.gallery-view {
+        grid-template-columns: repeat(auto-fill, minmax(372px, 1fr));
+    }
+    
+    .header {
+        max-width: 900px;
+    }
+    
+    .search-container.fixed-bottom {
+        max-width: 900px;
+    }
+}
+
+/*Large desktop devices (min-width: 1440px)*/
+@media (min-width: 1440px) {
+    .container {
+        max-width: 1200px;
+    }
+    
+    .header {
+        max-width: 1200px;
+    }
+    
+    .search-container.fixed-bottom {
+        max-width: 1200px;
+    }
+    
+    .notes-container.gallery-view {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+}
+

@@ -1,0 +1,25 @@
+/*Landscape orientation for mobile devices*/
+@media (max-width: 768px) and (orientation: landscape) {
+    .container {
+        padding-top: 60px;
+        padding-bottom: 80px;
+    }
+    
+    .header {
+        padding: 8px 16px;
+    }
+    
+    .title {
+        font-size: 26px;
+    }
+    
+    .modal-content {
+        max-height: 90vh;
+        max-width: 500px;
+    }
+    
+    .note-content-input {
+        min-height: 200px;
+    }
+}
+

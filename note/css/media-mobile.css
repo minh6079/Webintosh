@@ -1,0 +1,38 @@
+/*Mobile devices (max-width: 768px)*/
+@media (max-width: 768px) {
+    .notes-container.gallery-view {
+        grid-template-columns: 1fr;
+    }
+    
+    .container {
+        padding: 16px;
+    }
+    
+    .title {
+        font-size: 28px;
+    }
+    
+    .modal-content {
+        max-height: 95vh;
+        border-radius: 20px 20px 0 0;
+        margin-top: auto;
+    }
+    
+    .toast-container {
+        top: 10px;
+        max-width: calc(100% - 32px);
+    }
+    
+    .confirm-content {
+        max-width: calc(100% - 40px);
+    }
+    
+    .note-radio-wrapper {
+        left: 16px;
+    }
+    
+    body.selection-mode .note-content-wrapper {
+        margin-left: 40px;
+    }
+}
+

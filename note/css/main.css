@@ -1,0 +1,16 @@
+/*main CSS file - imports all modules*/
+@import url('variables.css');
+@import url('base.css');
+@import url('components.css');
+
+
+
+
+
+/*adapting the page to certain screen resolutions*/
+@import url('media-small-mobile.css');
+@import url('media-mobile.css');
+@import url('media-tablet.css');
+@import url('media-desktop.css');
+@import url('media-landscape.css');
+
