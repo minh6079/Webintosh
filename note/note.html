@@ -119,6 +119,7 @@
             </button>
             <div class="selection-buttons" id="selectionButtons" style="display: none; gap: 12px;">
                 <button class="select-all-btn" id="selectAllBtn" data-i18n="selectAll">Select all</button>
+                <button class="select-all-btn" id="exportSelectedBtn" data-i18n="export" style="display: none;">Export</button>
                 <button class="deselect-all-btn" id="deselectAllBtn" style="display: none;" data-i18n="deselectAll">Deselect all</button>
             </div>
         </div>
@@ -149,6 +150,13 @@
                         <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
                     </svg>
                     <span class="modal-action-label" data-i18n="duplicate">Duplicate</span>
+                </button>
+                <button class="modal-action-btn export-action-btn" id="modalExportBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 5v10m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span class="modal-action-label" data-i18n="export">Export</span>
                 </button>
                 <button class="modal-action-btn delete-action-btn" id="modalDeleteBtn">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -183,4 +191,3 @@
     <script src="js/main.js"></script>
 </body>
 </html>
-

@@ -179,6 +179,7 @@ function toggleSelectionMode() {
         searchContainer.querySelector('.search-input-wrapper').style.display = 'block';
         addBtn.style.display = 'flex';
         selectionButtons.style.display = 'none';
+        exportSelectedBtn.style.display = 'none';
         menuToggle.querySelector('.menu-dots-icon').style.display = 'block';
         menuDoneIcon.style.display = 'none';
     }
@@ -208,10 +209,14 @@ function updateSelectAllButtonText() {
         selectAllBtn.textContent = t('selectAll');
         selectAllBtn.classList.remove('delete-mode');
         deselectAllBtn.style.display = 'none';
+        exportSelectedBtn.style.display = 'none';
+        exportSelectedBtn.disabled = true;
     } else {
         selectAllBtn.textContent = t('deleteSelected');
         selectAllBtn.classList.add('delete-mode');
         deselectAllBtn.style.display = 'block';
+        exportSelectedBtn.style.display = 'inline-flex';
+        exportSelectedBtn.disabled = false;
     }
 }
 
@@ -275,5 +280,17 @@ async function deleteSelectedNotes() {
             toggleSelectionMode();
         }
     }
+}
+
+async function exportSelectedNotes() {
+    if (selectedNotes.size === 0) return;
+    const ids = Array.from(selectedNotes);
+    for (const id of ids) {
+        const note = notes.find(n => n.id === id);
+        if (note) {
+            await exportNoteToFinder(note);
+        }
+    }
+    showToast(t('exportedToFinder'), 'success');
 }
 

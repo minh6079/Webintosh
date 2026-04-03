@@ -10,28 +10,98 @@ function getElementByZIndex(zIndex) {
 }
 
 let finder_code = `
-<div id="sidebar"></div>
-<div id="edge"></div>
-<div id="content"></div>
-<div id="toolbar">
-    <div id="win-tool">
-        <div id="close" onclick='exit("#finder", "finder")'></div>
-        <div id="minimize" onclick="small('finder')"></div>
-        <div id="zoom" onclick='big("finder")'></div>
-    </div>
-    <div id="toolbar-right-content">
-        <div id="back-for-ward">
-            <img id="wards" src="./images/chevron.backward.png" />
-            <img id="wards" src="./images/chevron.forward.png" style="margin: 0;" />
+<div class="finder-shell">
+    <div class="finder-toolbar">
+        <div class="finder-toolbar-left">
+            <div id="win-tool">
+                <div id="close" onclick='exit("#finder", "finder")'></div>
+                <div id="minimize" onclick="small('finder')"></div>
+                <div id="zoom" onclick='big("finder")'></div>
+            </div>
+            <div class="finder-nav">
+                <button class="finder-tool-button" data-action="back" title="Back">
+                    <span class="finder-arrow" aria-hidden="true">‹</span>
+                </button>
+                <button class="finder-tool-button" data-action="forward" title="Forward">
+                    <span class="finder-arrow" aria-hidden="true">›</span>
+                </button>
+            </div>
+            <div class="finder-title">Pictures</div>
         </div>
-        <p id="title">Title</p>
-        <div id="right-tools">
-            <div id="item">
-                <img src="./images/magnifyingglass.png" width="20" height="20" />
+        <div class="finder-toolbar-right">
+            <div class="finder-menu-wrap">
+                <button class="finder-tool-button" data-action="new-menu" title="New">New</button>
+                <div class="finder-menu finder-new-menu">
+                    <button type="button" data-action="new-folder">New Folder</button>
+                    <button type="button" data-action="new-text">New Text File</button>
+                </div>
+            </div>
+            <div class="finder-menu-wrap">
+                <button class="finder-tool-button" data-action="import-menu" title="Import">Import</button>
+                <div class="finder-menu finder-import-menu">
+                    <button type="button" data-action="import-files">Import Files</button>
+                    <button type="button" data-action="import-folder">Import Folder</button>
+                </div>
+            </div>
+            <div class="finder-search">
+                <img src="./images/magnifyingglass.png" alt="Search" />
+                <input class="finder-search-input" type="text" placeholder="Search" />
             </div>
         </div>
-        <div id="toolbar-bottom-border"></div>
     </div>
+    <div class="finder-body">
+        <aside class="finder-sidebar">
+            <div class="finder-sidebar-section">
+                <div class="finder-sidebar-title">Favorites</div>
+                <button class="finder-sidebar-item" data-path="__recents__">Recents</button>
+                <button class="finder-sidebar-item" data-path="/Applications">Applications</button>
+                <button class="finder-sidebar-item" data-path="/Desktop">Desktop</button>
+                <button class="finder-sidebar-item" data-path="/Documents">Documents</button>
+                <button class="finder-sidebar-item" data-path="/Downloads">Downloads</button>
+                <button class="finder-sidebar-item" data-path="/Notes">Notes</button>
+                <button class="finder-sidebar-item" data-path="/Pictures">Pictures</button>
+            </div>
+            <div class="finder-sidebar-section">
+                <div class="finder-sidebar-title">Locations</div>
+                <button class="finder-sidebar-item" data-path="/">Macintosh HD</button>
+            </div>
+            <div class="finder-sidebar-section">
+                <div class="finder-sidebar-title">Trash</div>
+                <button class="finder-sidebar-item" data-path="/Trash">Trash</button>
+            </div>
+        </aside>
+        <div class="finder-divider"></div>
+        <section class="finder-content">
+            <div class="finder-table-header">
+                <div class="finder-cell name">Name</div>
+                <div class="finder-cell modified">Date Modified</div>
+                <div class="finder-cell size">Size</div>
+                <div class="finder-cell kind">Kind</div>
+            </div>
+            <div class="finder-table-body"></div>
+        </section>
+        <aside class="finder-preview">
+            <div class="finder-preview-media"></div>
+            <div class="finder-preview-details">
+                <div class="finder-preview-title">No Selection</div>
+                <div class="finder-preview-subtitle">Choose a file to preview</div>
+                <div class="finder-preview-info"></div>
+            </div>
+        </aside>
+    </div>
+    <div class="finder-context-menu">
+        <button type="button" data-action="context-restore">Restore</button>
+        <button type="button" data-action="context-send-notes">Send to Notes</button>
+        <button type="button" data-action="context-empty-trash">Empty Trash</button>
+        <div class="finder-menu-divider"></div>
+        <button type="button" data-action="context-new-folder">New Folder</button>
+        <button type="button" data-action="context-new-text">New Text File</button>
+        <div class="finder-menu-divider"></div>
+        <button type="button" data-action="context-rename">Rename</button>
+        <button type="button" data-action="context-delete">Delete</button>
+    </div>
+    <input class="finder-upload-input" type="file" multiple />
+    <input class="finder-folder-input" type="file" webkitdirectory directory multiple />
 </div>`;
 
 let settings_code = `

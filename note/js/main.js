@@ -108,6 +108,14 @@ function init() {
         }
     });
 
+    modalExportBtn.addEventListener('click', async () => {
+        if (!currentNoteId) return;
+        const note = notes.find(n => n.id === currentNoteId);
+        if (!note) return;
+        await exportNoteToFinder(note);
+        showToast(t('exportedToFinder'), 'success');
+    });
+
     //close menu on outside click
     document.addEventListener('click', (e) => {
         if (!dropdownMenu.contains(e.target) && !menuToggle.contains(e.target)) {
@@ -124,6 +132,10 @@ function init() {
             //if there are selected - delete them
             await deleteSelectedNotes();
         }
+    });
+
+    exportSelectedBtn.addEventListener('click', async () => {
+        await exportSelectedNotes();
     });
 
     //handler for deselect all button
@@ -183,6 +195,12 @@ function init() {
                     confirmResolve = null;
                 }
             }
+        }
+    });
+
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'notes') {
+            syncNotesFromStorage();
         }
     });
 }

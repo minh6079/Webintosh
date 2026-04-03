@@ -41,20 +41,23 @@ function OpenApp(img, index) {
     if (index > window.index) {
         window.index = index;
     }
-    if (altText == "Finder") {
-        if (fd_status != true) {
-            window.finder_div = document.createElement("div");
-            window.finder_div.id = `finder`;
-            window.finder_div.classList.add("window", "finder");
-            window.finder_div.innerHTML = finder_code;
-            window.finder_div.style.zIndex = index;
-            desktop.appendChild(window.finder_div);
-            makeDraggable(window.finder_div);
-            fd_status = true;
-            selectWindowInit();
-        } else {
-            window.finder_div.style.zIndex = window.index * 2;
-        }
+        if (altText == "Finder") {
+            if (fd_status != true) {
+                window.finder_div = document.createElement("div");
+                window.finder_div.id = `finder`;
+                window.finder_div.classList.add("window", "finder");
+                window.finder_div.innerHTML = finder_code;
+                window.finder_div.style.zIndex = index;
+                desktop.appendChild(window.finder_div);
+                makeDraggable(window.finder_div);
+                if (typeof initFinder === "function") {
+                    initFinder(window.finder_div);
+                }
+                fd_status = true;
+                selectWindowInit();
+            } else {
+                window.finder_div.style.zIndex = window.index * 2;
+            }
         topbarText("Finder", "File", "Edit", "View", "Go", "Window", "Help", "", "", "");
     } else if (altText == "Launchpad") {
         if (lp_status == false) {

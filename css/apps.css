@@ -91,15 +91,15 @@
 
 @keyframes vibrate {
     0% {
-        transform: rotate(5deg);
+        transform: rotate(9deg);
     }
 
     50% {
-        transform: rotate(-5deg);
+        transform: rotate(-9deg);
     }
 
     100% {
-        transform: rotate(5deg);
+        transform: rotate(9deg);
     }
 }
 
@@ -109,8 +109,12 @@
     margin: 0;
 }
 
+#launchpad .ct {
+    transform-origin: 50% 90%;
+}
+
 #launchpad .ct:hover {
-    animation: vibrate 0.2s infinite;
+    animation: vibrate 0.3s infinite;
 }
 
 #launchpad .ct h5 {

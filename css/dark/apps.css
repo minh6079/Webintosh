@@ -95,6 +95,28 @@
     margin: 0;
 }
 
+@keyframes vibrate {
+    0% {
+        transform: rotate(9deg);
+    }
+
+    50% {
+        transform: rotate(-9deg);
+    }
+
+    100% {
+        transform: rotate(9deg);
+    }
+}
+
+#launchpad .ct {
+    transform-origin: 50% 90%;
+}
+
+#launchpad .ct:hover {
+    animation: vibrate 0.3s infinite;
+}
+
 #launchpad .ct h5 {
     font-size: 13.5px;
     text-shadow: 0 0 20px rgba(0, 0, 0, 0.6);

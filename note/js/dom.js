@@ -26,6 +26,7 @@ const pinnedSection = document.getElementById('pinnedSection');
 const searchContainer = document.getElementById('searchContainer');
 const selectionButtons = document.getElementById('selectionButtons');
 const selectAllBtn = document.getElementById('selectAllBtn');
+const exportSelectedBtn = document.getElementById('exportSelectedBtn');
 const deselectAllBtn = document.getElementById('deselectAllBtn');
 const menuDoneIcon = document.getElementById('menuDoneIcon');
 const pinnedContainer = document.getElementById('pinnedContainer');
@@ -35,4 +36,5 @@ const modalActions = document.getElementById('modalActions');
 const modalPinBtn = document.getElementById('modalPinBtn');
 const modalDuplicateBtn = document.getElementById('modalDuplicateBtn');
 const modalDeleteBtn = document.getElementById('modalDeleteBtn');
+const modalExportBtn = document.getElementById('modalExportBtn');
 
