@@ -167,6 +167,12 @@
     background: rgba(245, 246, 248, 0.85);
     padding: 16px 12px;
     overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.finder-sidebar::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 .finder-sidebar-section {
@@ -224,6 +230,12 @@
 .finder-table-body {
     flex: 1;
     overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.finder-table-body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 .finder-table-body.dragover {
@@ -320,6 +332,7 @@
     flex-direction: column;
     padding: 16px;
     gap: 16px;
+    overflow: hidden;
 }
 
 .finder-preview-media {
@@ -358,6 +371,12 @@
     white-space: pre-wrap;
     background: rgba(255, 255, 255, 0.7);
     border-radius: 8px;
+    scrollbar-width: none;
+}
+
+.finder-preview-text::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 .finder-preview-pdf {
@@ -366,6 +385,12 @@
     border: none;
     border-radius: 8px;
     background: #fff;
+    scrollbar-width: none;
+}
+
+.finder-preview-pdf::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 .finder-preview-html {

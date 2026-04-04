@@ -9,24 +9,40 @@ function call_style(app, key, value) {
 function makeDraggable(element) {
     let isDragging = false;
     let offsetX, offsetY;
+    let activePointerId = null;
 
-    element.addEventListener('mousedown', (e) => {
+    element.addEventListener('pointerdown', (e) => {
+        if (element.dataset.resizing === "true" || e.target.closest('.window-resize-handle') || e.target.closest('#win-tool')) {
+            return;
+        }
+        if (e.button !== undefined && e.button !== 0) {
+            return;
+        }
         isDragging = true;
+        activePointerId = e.pointerId;
+        element.setPointerCapture(e.pointerId);
         offsetX = e.clientX - element.getBoundingClientRect().left;
         offsetY = e.clientY - element.getBoundingClientRect().top;
         element.style.position = 'absolute';
         element.style.zIndex = 2;
+        e.preventDefault();
     });
 
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            element.style.left = `${e.clientX - offsetX}px`;
-            element.style.top = `${e.clientY - offsetY}px`;
+    element.addEventListener('pointermove', (e) => {
+        if (!isDragging || e.pointerId !== activePointerId) {
+            return;
         }
+        element.style.left = `${e.clientX - offsetX}px`;
+        element.style.top = `${e.clientY - offsetY}px`;
     });
 
-    document.addEventListener('mouseup', () => {
+    element.addEventListener('pointerup', (e) => {
+        if (e.pointerId !== activePointerId) {
+            return;
+        }
         isDragging = false;
+        activePointerId = null;
+        element.releasePointerCapture(e.pointerId);
     });
 }
 
@@ -46,9 +62,18 @@ function topbarText(text1, text2, text3, text4, text5, text6, text7, text8, text
 function makeDraggableHardWare(element) {
     let isDragging = false;
     let offsetX, offsetY;
+    let activePointerId = null;
 
-    element.addEventListener('mousedown', (e) => {
+    element.addEventListener('pointerdown', (e) => {
+        if (element.dataset.resizing === "true" || e.target.closest('.window-resize-handle') || e.target.closest('#win-tool')) {
+            return;
+        }
+        if (e.button !== undefined && e.button !== 0) {
+            return;
+        }
         isDragging = true;
+        activePointerId = e.pointerId;
+        element.setPointerCapture(e.pointerId);
         offsetX = e.clientX - element.getBoundingClientRect().left;
         offsetY = e.clientY - element.getBoundingClientRect().top;
         element.style.zIndex = 2; // Set z-index to ensure the element is on top when being dragged
@@ -57,20 +82,134 @@ function makeDraggableHardWare(element) {
         e.preventDefault();
     });
 
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            element.style.left = `${e.clientX - offsetX + element.offsetWidth / 2}px`;
-            element.style.top = `${e.clientY - offsetY + element.offsetHeight / 2}px`;
+    element.addEventListener('pointermove', (e) => {
+        if (!isDragging || e.pointerId !== activePointerId) {
+            return;
         }
+        element.style.left = `${e.clientX - offsetX + element.offsetWidth / 2}px`;
+        element.style.top = `${e.clientY - offsetY + element.offsetHeight / 2}px`;
     });
 
-    document.addEventListener('mouseup', () => {
+    element.addEventListener('pointerup', (e) => {
+        if (e.pointerId !== activePointerId) {
+            return;
+        }
         isDragging = false;
+        activePointerId = null;
+        element.releasePointerCapture(e.pointerId);
     });
 }
 
+function makeResizable(element) {
+    if (!element || element.querySelector('.window-resize-handle')) {
+        return;
+    }
+    const handle = document.createElement('div');
+    handle.className = 'window-resize-handle';
+    element.appendChild(handle);
+
+    const styles = window.getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    const minWidth = parseFloat(element.dataset.minWidth) || parseFloat(styles.minWidth) || 240;
+    const minHeight = parseFloat(element.dataset.minHeight) || parseFloat(styles.minHeight) || 160;
+    const maxWidth = parseFloat(element.dataset.maxWidth) || rect.width;
+    const maxHeight = parseFloat(element.dataset.maxHeight) || rect.height;
+    let isResizing = false;
+    let startX = 0;
+    let startY = 0;
+    let startWidth = 0;
+    let startHeight = 0;
+
+    const onMove = (e) => {
+        if (!isResizing || e.pointerId !== activePointerId) return;
+        const nextWidth = Math.min(maxWidth, Math.max(minWidth, startWidth + (e.clientX - startX)));
+        const nextHeight = Math.min(maxHeight, Math.max(minHeight, startHeight + (e.clientY - startY)));
+        element.style.width = `${nextWidth}px`;
+        element.style.height = `${nextHeight}px`;
+    };
+
+    const onUp = (e) => {
+        if (!isResizing || e.pointerId !== activePointerId) return;
+        isResizing = false;
+        activePointerId = null;
+        element.dataset.resizing = "false";
+        handle.releasePointerCapture(e.pointerId);
+        handle.removeEventListener('pointermove', onMove);
+        handle.removeEventListener('pointerup', onUp);
+        handle.removeEventListener('pointercancel', onUp);
+    };
+
+    let activePointerId = null;
+
+    handle.addEventListener('pointerdown', (e) => {
+        if (e.button !== undefined && e.button !== 0) {
+            return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        isResizing = true;
+        activePointerId = e.pointerId;
+        element.dataset.resizing = "true";
+        handle.setPointerCapture(e.pointerId);
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = element.getBoundingClientRect().width;
+        startHeight = element.getBoundingClientRect().height;
+        handle.addEventListener('pointermove', onMove);
+        handle.addEventListener('pointerup', onUp);
+        handle.addEventListener('pointercancel', onUp);
+    });
+}
+
+function attachIframeScale(windowEl, iframeSelector) {
+    if (!windowEl) {
+        return;
+    }
+    const iframe = windowEl.querySelector(iframeSelector);
+    if (!iframe || iframe.dataset.scaled === "true") {
+        return;
+    }
+    const parent = iframe.parentElement;
+    if (!parent) {
+        return;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.className = "iframe-scale-wrap";
+    parent.replaceChild(wrap, iframe);
+    wrap.appendChild(iframe);
+
+    iframe.dataset.scaled = "true";
+
+    const baseWidth = wrap.clientWidth;
+    const baseHeight = wrap.clientHeight;
+    iframe.dataset.baseWidth = `${baseWidth}`;
+    iframe.dataset.baseHeight = `${baseHeight}`;
+    iframe.style.width = `${baseWidth}px`;
+    iframe.style.height = `${baseHeight}px`;
+    iframe.style.transformOrigin = "top left";
+
+    const update = () => {
+        const bw = parseFloat(iframe.dataset.baseWidth) || baseWidth;
+        const bh = parseFloat(iframe.dataset.baseHeight) || baseHeight;
+        const availableWidth = wrap.clientWidth || bw;
+        const availableHeight = wrap.clientHeight || bh;
+        const scale = Math.min(1, availableWidth / bw, availableHeight / bh);
+        iframe.style.transform = `scale(${scale})`;
+    };
+
+    update();
+
+    if (window.ResizeObserver) {
+        const ro = new ResizeObserver(update);
+        ro.observe(wrap);
+    } else {
+        window.addEventListener("resize", update);
+    }
+}
+
 function OpenMenu(menu) {
-    alert('You clicked the menu item：' + menu.textContent.replace('...', ''))
+    null;
 }
 
 function Reset() {

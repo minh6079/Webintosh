@@ -215,7 +215,7 @@ function updateSelectAllButtonText() {
         selectAllBtn.textContent = t('deleteSelected');
         selectAllBtn.classList.add('delete-mode');
         deselectAllBtn.style.display = 'block';
-        exportSelectedBtn.style.display = 'inline-flex';
+        exportSelectedBtn.style.display = 'block';
         exportSelectedBtn.disabled = false;
     }
 }

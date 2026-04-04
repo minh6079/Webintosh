@@ -46,14 +46,17 @@ function OpenApp(img, index) {
                 window.finder_div = document.createElement("div");
                 window.finder_div.id = `finder`;
                 window.finder_div.classList.add("window", "finder");
-                window.finder_div.innerHTML = finder_code;
-                window.finder_div.style.zIndex = index;
-                desktop.appendChild(window.finder_div);
-                makeDraggable(window.finder_div);
-                if (typeof initFinder === "function") {
-                    initFinder(window.finder_div);
-                }
-                fd_status = true;
+            window.finder_div.innerHTML = finder_code;
+            window.finder_div.style.zIndex = index;
+            desktop.appendChild(window.finder_div);
+            makeDraggable(window.finder_div);
+            window.finder_div.dataset.minWidth = "720";
+            window.finder_div.dataset.minHeight = "420";
+            makeResizable(window.finder_div);
+            if (typeof initFinder === "function") {
+                initFinder(window.finder_div);
+            }
+            fd_status = true;
                 selectWindowInit();
             } else {
                 window.finder_div.style.zIndex = window.index * 2;
@@ -86,6 +89,9 @@ function OpenApp(img, index) {
                 window.safari_div.style.zIndex = index;
                 desktop.appendChild(window.safari_div);
                 makeDraggable(window.safari_div);
+                window.safari_div.dataset.minWidth = "640";
+                window.safari_div.dataset.minHeight = "420";
+                makeResizable(window.safari_div);
                 safari_state = true;
                 selectWindowInit();
             } else {
@@ -106,6 +112,9 @@ function OpenApp(img, index) {
                 window.safari_div.style.zIndex = index;
                 desktop.appendChild(window.safari_div);
                 makeDraggable(window.safari_div);
+                window.safari_div.dataset.minWidth = "640";
+                window.safari_div.dataset.minHeight = "420";
+                makeResizable(window.safari_div);
                 safari_state = true;
                 selectWindowInit();
             } else {
@@ -124,6 +133,9 @@ function OpenApp(img, index) {
                 window.setting_div.style.zIndex = index;
                 desktop.appendChild(window.setting_div);
                 makeDraggable(window.setting_div);
+                window.setting_div.dataset.minWidth = "560";
+                window.setting_div.dataset.minHeight = "480";
+                makeResizable(window.setting_div);
                 setting_state = true;
                 selectWindowInit();
             } else {
@@ -144,6 +156,9 @@ function OpenApp(img, index) {
                 window.setting_div.style.zIndex = index;
                 desktop.appendChild(window.setting_div);
                 makeDraggable(window.setting_div);
+                window.setting_div.dataset.minWidth = "560";
+                window.setting_div.dataset.minHeight = "480";
+                makeResizable(window.setting_div);
                 setting_state = true;
                 selectWindowInit();
             } else {
@@ -162,6 +177,10 @@ function OpenApp(img, index) {
                 window.freeform_div.style.zIndex = index;
                 desktop.appendChild(window.freeform_div);
                 makeDraggable(window.freeform_div);
+                window.freeform_div.dataset.minWidth = "520";
+                window.freeform_div.dataset.minHeight = "360";
+                makeResizable(window.freeform_div);
+                attachIframeScale(window.freeform_div, "#main-freeform");
                 freeform_state = true;
                 selectWindowInit();
             } else {
@@ -182,6 +201,10 @@ function OpenApp(img, index) {
                 window.freeform_div.style.zIndex = index;
                 desktop.appendChild(window.freeform_div);
                 makeDraggable(window.freeform_div);
+                window.freeform_div.dataset.minWidth = "520";
+                window.freeform_div.dataset.minHeight = "360";
+                makeResizable(window.freeform_div);
+                attachIframeScale(window.freeform_div, "#main-freeform");
                 freeform_state = true;
                 selectWindowInit();
             } else {
@@ -200,6 +223,9 @@ function OpenApp(img, index) {
                 window.notes_div.style.zIndex = index;
                 desktop.appendChild(window.notes_div);
                 makeDraggable(window.notes_div);
+                window.notes_div.dataset.minWidth = "640";
+                window.notes_div.dataset.minHeight = "420";
+                makeResizable(window.notes_div);
                 notes_state = true;
                 selectWindowInit();
             } else {
@@ -220,6 +246,9 @@ function OpenApp(img, index) {
                 window.notes_div.style.zIndex = index;
                 desktop.appendChild(window.notes_div);
                 makeDraggable(window.notes_div);
+                window.notes_div.dataset.minWidth = "640";
+                window.notes_div.dataset.minHeight = "420";
+                makeResizable(window.notes_div);
                 notes_state = true;
                 selectWindowInit();
             } else {
@@ -238,6 +267,9 @@ function OpenApp(img, index) {
                 window.map_div.style.zIndex = index;
                 desktop.appendChild(window.map_div);
                 makeDraggable(window.map_div);
+                window.map_div.dataset.minWidth = "640";
+                window.map_div.dataset.minHeight = "420";
+                makeResizable(window.map_div);
                 map_state = true;
                 selectWindowInit();
             } else {
@@ -258,6 +290,9 @@ function OpenApp(img, index) {
                 window.map_div.style.zIndex = index;
                 desktop.appendChild(window.map_div);
                 makeDraggable(window.map_div);
+                window.map_div.dataset.minWidth = "640";
+                window.map_div.dataset.minHeight = "420";
+                makeResizable(window.map_div);
                 map_state = true;
                 selectWindowInit();
             } else {
@@ -313,6 +348,9 @@ function AboutHardWare(index) {
         hardware_div.style.zIndex = index;
         desktop.appendChild(hardware_div);
         makeDraggableHardWare(hardware_div);
+        hardware_div.dataset.minWidth = "240";
+        hardware_div.dataset.minHeight = "360";
+        makeResizable(hardware_div);
         hardware_state = true;
     } else {
         return;

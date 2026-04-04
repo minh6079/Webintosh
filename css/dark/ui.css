@@ -11,7 +11,30 @@
 }
 
 .window {
-    resize: both;
+    overflow: hidden;
+}
+
+.window-resize-handle {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    width: 14px;
+    height: 14px;
+    cursor: se-resize;
+    border-radius: 2px;
+    z-index: 6;
+    pointer-events: auto;
+    touch-action: none;
+    background: linear-gradient(135deg,
+            transparent 0%,
+            transparent 40%,
+            rgba(255, 255, 255, 0.2) 40%,
+            rgba(255, 255, 255, 0.2) 55%,
+            transparent 55%,
+            transparent 70%,
+            rgba(255, 255, 255, 0.2) 70%,
+            rgba(255, 255, 255, 0.2) 85%,
+            transparent 85%);
 }
 
 #bg {
@@ -194,6 +217,9 @@
     display: flex;
     flex-direction: row;
     justify-content: center;
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
 }
 
 #close {

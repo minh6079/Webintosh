@@ -152,17 +152,30 @@
     box-shadow: 0px 36px 100px rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
 }
 
 #safari-topbar {
     width: 100%;
-    height: 8%;
+    height: 48px;
     border-radius: 16px 16px 0 0;
     background-color: #f6f6f5;
     display: flex;
     flex-direction: row;
+    align-items: center;
+    padding-left: 16px;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+#safari-topbar #win-tool,
+#freeform-topbar #win-tool,
+#note-topbar #win-tool,
+#map-topbar #win-tool {
+    margin-top: clamp(6px, 2vh, 18px);
+    margin-left: clamp(8px, 2vw, 18px);
 }
 
 #page-using {
@@ -182,9 +195,18 @@
 
 #main-freeform {
     width: 100%;
-    height: 92%;
+    flex: 1;
     border-radius: 0 0 16px 16px;
     border: none;
+    display: block;
+    position: relative;
+    z-index: 1;
+    scrollbar-width: none;
+}
+
+#main-freeform::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 #freeform-window {
@@ -199,17 +221,22 @@
     box-shadow: 0px 36px 100px rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
 }
 
 #freeform-topbar {
     width: 100%;
-    height: 8%;
+    height: 48px;
     border-radius: 16px 16px 0 0;
     background-color: #f6f6f5;
     display: flex;
     flex-direction: row;
+    align-items: center;
+    padding-left: 16px;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
 }
 
 #freeform-using {
@@ -239,31 +266,54 @@
     box-shadow: 0px 36px 100px rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
 }
 
 #note-topbar {
     width: 100%;
-    height: 8%;
+    height: 48px;
     border-radius: 16px 16px 0 0;
     background-color: #f6f6f5;
     display: flex;
     flex-direction: row;
+    align-items: center;
+    padding-left: 16px;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
 }
 
 #main-note {
     width: 100%;
-    height: 92%;
+    flex: 1;
     border-radius: 0 0 16px 16px;
     border: none;
+    display: block;
+    position: relative;
+    z-index: 1;
+    scrollbar-width: none;
+}
+
+#main-note::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 #main-safari {
     width: 100%;
-    height: 92%;
+    flex: 1;
     border-radius: 0 0 16px 16px;
     border: none;
+    display: block;
+    position: relative;
+    z-index: 1;
+    scrollbar-width: none;
+}
+
+#main-safari::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 #map-window {
@@ -278,17 +328,22 @@
     box-shadow: 0px 36px 100px rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
 }
 
 #map-topbar {
     width: 100%;
-    height: 8%;
+    height: 48px;
     border-radius: 16px 16px 0 0;
     background-color: #f6f6f5;
     display: flex;
     flex-direction: row;
+    align-items: center;
+    padding-left: 16px;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
 }
 
 #map-using {
@@ -308,9 +363,31 @@
 
 #main-map {
     width: 100%;
-    height: 92%;
+    flex: 1;
     border-radius: 0 0 16px 16px;
     border: none;
+    display: block;
+    position: relative;
+    z-index: 1;
+    scrollbar-width: none;
+}
+
+.iframe-scale-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 0 16px 16px;
+}
+
+.iframe-scale-wrap > iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#main-map::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 #settings {
@@ -318,6 +395,8 @@
     border-radius: 10px;
     width: 715px;
     height: 570px;
+    min-width: 560px;
+    min-height: 480px;
     position: absolute;
     top: 50px;
     left: 50px;
