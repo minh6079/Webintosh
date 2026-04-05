@@ -6,6 +6,42 @@ function call_style(app, key, value) {
     app.style[key] = value;
 }
 
+const WINDOW_HEADER_FOCUS_HEIGHT = 64;
+let highestWindowZ = 2;
+let windowZInitialized = false;
+
+function ensureWindowZInitialized(force = false) {
+    if (windowZInitialized && !force) {
+        return;
+    }
+    windowZInitialized = true;
+    let maxZ = 2;
+    document.querySelectorAll('.window').forEach(win => {
+        const z = parseFloat(window.getComputedStyle(win).zIndex) || 0;
+        if (z > maxZ) {
+            maxZ = z;
+        }
+    });
+    highestWindowZ = maxZ;
+}
+
+function getNextWindowZIndex() {
+    ensureWindowZInitialized();
+    highestWindowZ += 1;
+    return highestWindowZ;
+}
+
+function bringWindowToFront(win) {
+    if (!win) {
+        return;
+    }
+    win.style.zIndex = getNextWindowZIndex();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    ensureWindowZInitialized(true);
+});
+
 function makeDraggable(element) {
     let isDragging = false;
     let offsetX, offsetY;
@@ -24,7 +60,6 @@ function makeDraggable(element) {
         offsetX = e.clientX - element.getBoundingClientRect().left;
         offsetY = e.clientY - element.getBoundingClientRect().top;
         element.style.position = 'absolute';
-        element.style.zIndex = 2;
         e.preventDefault();
     });
 
