@@ -6,6 +6,42 @@ function call_style(app, key, value) {
     app.style[key] = value;
 }
 
+const WINDOW_HEADER_FOCUS_HEIGHT = 64;
+let highestWindowZ = 2;
+let windowZInitialized = false;
+
+function ensureWindowZInitialized(force = false) {
+    if (windowZInitialized && !force) {
+        return;
+    }
+    windowZInitialized = true;
+    let maxZ = 2;
+    document.querySelectorAll('.window').forEach(win => {
+        const z = parseFloat(window.getComputedStyle(win).zIndex) || 0;
+        if (z > maxZ) {
+            maxZ = z;
+        }
+    });
+    highestWindowZ = maxZ;
+}
+
+function getNextWindowZIndex() {
+    ensureWindowZInitialized();
+    highestWindowZ += 1;
+    return highestWindowZ;
+}
+
+function bringWindowToFront(win) {
+    if (!win) {
+        return;
+    }
+    win.style.zIndex = getNextWindowZIndex();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    ensureWindowZInitialized(true);
+});
+
 function makeDraggable(element) {
     let isDragging = false;
     let offsetX, offsetY;
@@ -18,13 +54,13 @@ function makeDraggable(element) {
         if (e.button !== undefined && e.button !== 0) {
             return;
         }
+        bringWindowToFront(element);
         isDragging = true;
         activePointerId = e.pointerId;
         element.setPointerCapture(e.pointerId);
         offsetX = e.clientX - element.getBoundingClientRect().left;
         offsetY = e.clientY - element.getBoundingClientRect().top;
         element.style.position = 'absolute';
-        element.style.zIndex = 2;
         e.preventDefault();
     });
 
@@ -71,6 +107,7 @@ function makeDraggableHardWare(element) {
         if (e.button !== undefined && e.button !== 0) {
             return;
         }
+        bringWindowToFront(element);
         isDragging = true;
         activePointerId = e.pointerId;
         element.setPointerCapture(e.pointerId);
@@ -420,37 +457,38 @@ function removeStyleSheet(link) {
     document.head.removeChild(link);
 }
 
+function updateTopbarForWindow(win) {
+    if (!win) {
+        return;
+    }
+    if (win.id == 'settings') {
+        topbarText("System Preferences", "File", "Edit", "View", "Window", "Help", "", "", "", "");
+    } else if (win.id == 'safari-window') {
+        topbarText("Safari", "File", "Edit", "View", "History", "Bookmarks", "Window", "Help", "", "");
+    } else if (win.id == 'freeform-window') {
+        topbarText("Freeform", "File", "Edit", "View", "Window", "Help", "", "", "", "");
+    } else if (win.id == 'note-window') {
+        topbarText("Notes", "File", "Edit", "View", "Window", "Help", "", "", "", "");
+    } else if (win.id == 'map-window') {
+        topbarText("Maps", "File", "Edit", "View", "Window", "Help", "", "", "", "");
+    } else {
+        topbarText("Finder", "File", "Edit", "View", "Go", "Window", "Help", "", "", "");
+    }
+}
+
 function selectWindowInit() {
-    const windows = document.querySelectorAll('.window');
-    let maxZIndex = 2;
-
-    windows.forEach(win => {
-        win.addEventListener('mousedown', function () {
-            // Update maxZIndex
-            maxZIndex *= 2;
-            win.style.zIndex = maxZIndex; // Set the new z-index of the window
-
-            // If the window is the settings window
-            if (win.id == 'settings') {
-                topbarText("System Preferences", "File", "Edit", "View", "Window", "Help", "", "", "", "");
+    ensureWindowZInitialized();
+    document.querySelectorAll('.window').forEach(win => {
+        if (win.dataset.focusAttached === 'true') {
+            return;
+        }
+        win.dataset.focusAttached = 'true';
+        win.addEventListener('pointerdown', function (e) {
+            if (e && e.button !== undefined && e.button !== 0) {
+                return;
             }
-            // If the window is the Safari browser window
-            else if (win.id == 'safari-window') {
-                topbarText("Safari", "File", "Edit", "View", "History", "Bookmarks", "Window", "Help", "", "");
-            }
-            else if (win.id == 'freeform-window') {
-                topbarText("Freeform", "File", "Edit", "View", "Window", "Help", "", "", "", "");
-            }
-            else if (win.id == 'note-window') {
-                topbarText("Notes", "File", "Edit", "View", "Window", "Help", "", "", "", "");
-            }
-            else if (win.id == 'map-window') {
-                topbarText("Maps", "File", "Edit", "View", "Window", "Help", "", "", "", "");
-            }
-            // If it's any other window
-            else {
-                topbarText("Finder", "File", "Edit", "View", "Go", "Window", "Help", "", "", "");
-            }
+            bringWindowToFront(win);
+            updateTopbarForWindow(win);
         });
     });
 }
