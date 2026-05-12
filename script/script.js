@@ -44,8 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function makeDraggable(element) {
     let isDragging = false;
+    let pendingDrag = false;
     let offsetX, offsetY;
+    let startX = 0;
+    let startY = 0;
     let activePointerId = null;
+    const DRAG_THRESHOLD_PX = 4;
 
     element.addEventListener('pointerdown', (e) => {
         if (element.dataset.resizing === "true" || e.target.closest('.window-resize-handle') || e.target.closest('#win-tool')) {
@@ -55,21 +59,31 @@ function makeDraggable(element) {
             return;
         }
         bringWindowToFront(element);
-        isDragging = true;
+        pendingDrag = true;
         activePointerId = e.pointerId;
-        element.setPointerCapture(e.pointerId);
+        startX = e.clientX;
+        startY = e.clientY;
         offsetX = e.clientX - element.getBoundingClientRect().left;
         offsetY = e.clientY - element.getBoundingClientRect().top;
         element.style.position = 'absolute';
-        e.preventDefault();
     });
 
     element.addEventListener('pointermove', (e) => {
-        if (!isDragging || e.pointerId !== activePointerId) {
+        if ((!pendingDrag && !isDragging) || e.pointerId !== activePointerId) {
             return;
+        }
+        if (!isDragging) {
+            const deltaX = Math.abs(e.clientX - startX);
+            const deltaY = Math.abs(e.clientY - startY);
+            if (deltaX < DRAG_THRESHOLD_PX && deltaY < DRAG_THRESHOLD_PX) {
+                return;
+            }
+            isDragging = true;
+            element.setPointerCapture(e.pointerId);
         }
         element.style.left = `${e.clientX - offsetX}px`;
         element.style.top = `${e.clientY - offsetY}px`;
+        e.preventDefault();
     });
 
     element.addEventListener('pointerup', (e) => {
@@ -77,8 +91,13 @@ function makeDraggable(element) {
             return;
         }
         isDragging = false;
+        pendingDrag = false;
         activePointerId = null;
-        element.releasePointerCapture(e.pointerId);
+        try {
+            element.releasePointerCapture(e.pointerId);
+        } catch (error) {
+            // ignore (capture may not have been taken if user only clicked)
+        }
     });
 }
 
@@ -97,8 +116,12 @@ function topbarText(text1, text2, text3, text4, text5, text6, text7, text8, text
 
 function makeDraggableHardWare(element) {
     let isDragging = false;
+    let pendingDrag = false;
     let offsetX, offsetY;
+    let startX = 0;
+    let startY = 0;
     let activePointerId = null;
+    const DRAG_THRESHOLD_PX = 4;
 
     element.addEventListener('pointerdown', (e) => {
         if (element.dataset.resizing === "true" || e.target.closest('.window-resize-handle') || e.target.closest('#win-tool')) {
@@ -108,23 +131,31 @@ function makeDraggableHardWare(element) {
             return;
         }
         bringWindowToFront(element);
-        isDragging = true;
+        pendingDrag = true;
         activePointerId = e.pointerId;
-        element.setPointerCapture(e.pointerId);
+        startX = e.clientX;
+        startY = e.clientY;
         offsetX = e.clientX - element.getBoundingClientRect().left;
         offsetY = e.clientY - element.getBoundingClientRect().top;
         element.style.zIndex = 2; // Set z-index to ensure the element is on top when being dragged
-
-        // Prevent the default event to avoid selecting text or other elements during dragging
-        e.preventDefault();
     });
 
     element.addEventListener('pointermove', (e) => {
-        if (!isDragging || e.pointerId !== activePointerId) {
+        if ((!pendingDrag && !isDragging) || e.pointerId !== activePointerId) {
             return;
+        }
+        if (!isDragging) {
+            const deltaX = Math.abs(e.clientX - startX);
+            const deltaY = Math.abs(e.clientY - startY);
+            if (deltaX < DRAG_THRESHOLD_PX && deltaY < DRAG_THRESHOLD_PX) {
+                return;
+            }
+            isDragging = true;
+            element.setPointerCapture(e.pointerId);
         }
         element.style.left = `${e.clientX - offsetX + element.offsetWidth / 2}px`;
         element.style.top = `${e.clientY - offsetY + element.offsetHeight / 2}px`;
+        e.preventDefault();
     });
 
     element.addEventListener('pointerup', (e) => {
@@ -132,8 +163,13 @@ function makeDraggableHardWare(element) {
             return;
         }
         isDragging = false;
+        pendingDrag = false;
         activePointerId = null;
-        element.releasePointerCapture(e.pointerId);
+        try {
+            element.releasePointerCapture(e.pointerId);
+        } catch (error) {
+            // ignore (capture may not have been taken if user only clicked)
+        }
     });
 }
 
