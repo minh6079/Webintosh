@@ -79,6 +79,10 @@ let finder_code = `
                 <div class="finder-cell kind">Kind</div>
             </div>
             <div class="finder-table-body"></div>
+            <div class="finder-footer">
+                <div class="finder-path"></div>
+                <div class="finder-status"></div>
+            </div>
         </section>
         <aside class="finder-preview">
             <div class="finder-preview-media"></div>
@@ -203,6 +207,17 @@ let freeform_code = `<div id="freeform-topbar">
 <iframe id="main-freeform" src="./freeform.html">
 </iframe>`;
 
+let terminal_code = `<div id="terminal-topbar">
+    <div id="win-tool">
+        <div id="close" onclick='exit("#terminal-window", "terminal")'></div>
+        <div id="minimize" onclick="small('terminal-window')"></div>
+        <div id="zoom" onclick='big("terminal-window")'></div>
+    </div>
+    <div id="page-tool"></div>
+</div>
+<iframe id="main-terminal" src="./terminal.html">
+</iframe>`;
+
 let notes_code = `<div id="note-topbar">
     <div id="win-tool">
         <div id="close" onclick='exit("#note-window", "notes")'></div>
@@ -222,7 +237,7 @@ let maps_code = `<div id="map-topbar">
     </div>
     <div id="page-tool"></div>
 </div>
-<iframe id="main-map" src="https://maps.apple.com">
+<iframe id="main-map" data-src="https://maps.apple.com" src="about:blank">
 </iframe>`;
 
 let hardware_code = `<div id="win-tool" style="margin-top: 8px; margin-left: 8px;">

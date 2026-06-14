@@ -20,6 +20,9 @@ function exit(app, state) {
     } else if (state == "maps") {
         map_state = false;
         topbarText("Finder", "File", "Edit", "View", "Go", "Window", "Help", "", "", "");
+    } else if (state == "terminal") {
+        terminal_state = false;
+        topbarText("Finder", "File", "Edit", "View", "Go", "Window", "Help", "", "", "");
     } else if (state == "hardware") {
         hardware_state = false;
     }
@@ -35,19 +38,37 @@ function big(app) {
     be_big = true;
 }
 
+function closeLaunchpad() {
+    if (lp_status != true) {
+        return;
+    }
+    lp.style.animation = "LaunchPadBack 0.3s ease-in-out forwards";
+    lp_bg.style.animation = "opacityBack 0.3s ease-in-out forwards";
+    topbar.style.animation = "opacityBegin 0.2s ease-in-out forwards";
+    setTimeout(function () {
+        lp_bg.style.zIndex = 0;
+        lp.style.zIndex = 0;
+    }, 300);
+    lp_status = false;
+}
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && lp_status == true) {
+        closeLaunchpad();
+    }
+});
+
 function OpenApp(img, index) {
     let altText = img.alt;
-    window.index = index;
-    if (index > window.index) {
-        window.index = index;
-    }
-        if (altText == "Finder") {
-            if (fd_status != true) {
+    const nextIndex = Number.isFinite(Number(index)) ? Number(index) : getNextWindowZIndex();
+    window.index = nextIndex;
+    if (altText == "Finder") {
+        if (fd_status != true) {
                 window.finder_div = document.createElement("div");
                 window.finder_div.id = `finder`;
                 window.finder_div.classList.add("window", "finder");
             window.finder_div.innerHTML = finder_code;
-            window.finder_div.style.zIndex = index;
+            window.finder_div.style.zIndex = nextIndex;
             desktop.appendChild(window.finder_div);
             makeDraggable(window.finder_div);
             window.finder_div.dataset.minWidth = "720";
@@ -65,19 +86,14 @@ function OpenApp(img, index) {
     } else if (altText == "Launchpad") {
         if (lp_status == false) {
             lp_bg.style.opacity = 1;
-            lp_bg.animation = "opacityBegin 0.3s ease-in-out forwards";
-            lp_bg.style.zIndex = 4;
+            lp_bg.style.animation = "opacityBegin 0.3s ease-in-out forwards";
+            lp_bg.style.zIndex = 9998;
             topbar.style.animation = "opacityBack 0.2s ease-in-out forwards";
             lp.style.animation = "LaunchPadBegin 0.3s ease-in-out forwards";
+            lp.style.zIndex = 9999;
             lp_status = true;
         } else {
-            lp.style.animation = "LaunchPadBack 0.3s ease-in-out forwards";
-            lp_bg.animation = "opacityBack 0.3s ease-in-out forwards";
-            topbar.style.animation = "opacityBegin 0.2s ease-in-out forwards";
-            setTimeout(function () {
-                lp_bg.style.zIndex = 0;
-            }, 300);
-            lp_status = false;
+            closeLaunchpad();
         }
     } else if (altText == "Safari") {
         if (lp_status == false) {
@@ -86,7 +102,7 @@ function OpenApp(img, index) {
                 window.safari_div.id = `safari-window`;
                 window.safari_div.classList.add("window");
                 window.safari_div.innerHTML = safari_code;
-                window.safari_div.style.zIndex = index;
+                window.safari_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.safari_div);
                 makeDraggable(window.safari_div);
                 window.safari_div.dataset.minWidth = "640";
@@ -99,17 +115,18 @@ function OpenApp(img, index) {
             }
         } else {
             lp.style.animation = "LaunchPadBack 0.3s ease-in-out forwards";
-            lp_bg.animation = "opacityBack 0.3s ease-in-out forwards";
+            lp_bg.style.animation = "opacityBack 0.3s ease-in-out forwards";
             topbar.style.animation = "opacityBegin 0.2s ease-in-out forwards";
             setTimeout(function () {
                 lp_bg.style.zIndex = 0;
+                lp.style.zIndex = 0;
             }, 300);
             if (safari_state != true) {
                 window.safari_div = document.createElement("div");
                 window.safari_div.id = `safari-window`;
                 window.safari_div.classList.add("window");
                 window.safari_div.innerHTML = safari_code;
-                window.safari_div.style.zIndex = index;
+                window.safari_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.safari_div);
                 makeDraggable(window.safari_div);
                 window.safari_div.dataset.minWidth = "640";
@@ -130,7 +147,7 @@ function OpenApp(img, index) {
                 window.setting_div.id = `settings`;
                 window.setting_div.classList.add("window");
                 window.setting_div.innerHTML = settings_code;
-                window.setting_div.style.zIndex = index;
+                window.setting_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.setting_div);
                 makeDraggable(window.setting_div);
                 window.setting_div.dataset.minWidth = "560";
@@ -143,7 +160,7 @@ function OpenApp(img, index) {
             }
         } else {
             lp.style.animation = "LaunchPadBack 0.3s ease-in-out forwards";
-            lp_bg.animation = "opacityBack 0.3s ease-in-out forwards";
+            lp_bg.style.animation = "opacityBack 0.3s ease-in-out forwards";
             topbar.style.animation = "opacityBegin 0.2s ease-in-out forwards";
             setTimeout(function () {
                 lp_bg.style.zIndex = 0;
@@ -153,7 +170,7 @@ function OpenApp(img, index) {
                 window.setting_div.id = `settings`;
                 window.setting_div.classList.add("window");
                 window.setting_div.innerHTML = settings_code;
-                window.setting_div.style.zIndex = index;
+                window.setting_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.setting_div);
                 makeDraggable(window.setting_div);
                 window.setting_div.dataset.minWidth = "560";
@@ -174,7 +191,7 @@ function OpenApp(img, index) {
                 window.freeform_div.id = `freeform-window`;
                 window.freeform_div.classList.add("window");
                 window.freeform_div.innerHTML = freeform_code;
-                window.freeform_div.style.zIndex = index;
+                window.freeform_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.freeform_div);
                 makeDraggable(window.freeform_div);
                 window.freeform_div.dataset.minWidth = "520";
@@ -188,7 +205,7 @@ function OpenApp(img, index) {
             }
         } else {
             lp.style.animation = "LaunchPadBack 0.3s ease-in-out forwards";
-            lp_bg.animation = "opacityBack 0.3s ease-in-out forwards";
+            lp_bg.style.animation = "opacityBack 0.3s ease-in-out forwards";
             topbar.style.animation = "opacityBegin 0.2s ease-in-out forwards";
             setTimeout(function () {
                 lp_bg.style.zIndex = 0;
@@ -198,7 +215,7 @@ function OpenApp(img, index) {
                 window.freeform_div.id = `freeform-window`;
                 window.freeform_div.classList.add("window");
                 window.freeform_div.innerHTML = freeform_code;
-                window.freeform_div.style.zIndex = index;
+                window.freeform_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.freeform_div);
                 makeDraggable(window.freeform_div);
                 window.freeform_div.dataset.minWidth = "520";
@@ -220,7 +237,7 @@ function OpenApp(img, index) {
                 window.notes_div.id = `note-window`;
                 window.notes_div.classList.add("window");
                 window.notes_div.innerHTML = notes_code;
-                window.notes_div.style.zIndex = index;
+                window.notes_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.notes_div);
                 makeDraggable(window.notes_div);
                 window.notes_div.dataset.minWidth = "640";
@@ -233,7 +250,7 @@ function OpenApp(img, index) {
             }
         } else {
             lp.style.animation = "LaunchPadBack 0.3s ease-in-out forwards";
-            lp_bg.animation = "opacityBack 0.3s ease-in-out forwards";
+            lp_bg.style.animation = "opacityBack 0.3s ease-in-out forwards";
             topbar.style.animation = "opacityBegin 0.2s ease-in-out forwards";
             setTimeout(function () {
                 lp_bg.style.zIndex = 0;
@@ -243,7 +260,7 @@ function OpenApp(img, index) {
                 window.notes_div.id = `note-window`;
                 window.notes_div.classList.add("window");
                 window.notes_div.innerHTML = notes_code;
-                window.notes_div.style.zIndex = index;
+                window.notes_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.notes_div);
                 makeDraggable(window.notes_div);
                 window.notes_div.dataset.minWidth = "640";
@@ -264,7 +281,7 @@ function OpenApp(img, index) {
                 window.map_div.id = `map-window`;
                 window.map_div.classList.add("window");
                 window.map_div.innerHTML = maps_code;
-                window.map_div.style.zIndex = index;
+                window.map_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.map_div);
                 makeDraggable(window.map_div);
                 window.map_div.dataset.minWidth = "640";
@@ -272,12 +289,18 @@ function OpenApp(img, index) {
                 makeResizable(window.map_div);
                 map_state = true;
                 selectWindowInit();
+                requestAnimationFrame(() => {
+                    const mapFrame = window.map_div.querySelector('#main-map');
+                    if (mapFrame && mapFrame.dataset.src && mapFrame.src !== mapFrame.dataset.src) {
+                        mapFrame.src = mapFrame.dataset.src;
+                    }
+                });
             } else {
                 window.map_div.style.zIndex = window.index * 2;
             }
         } else {
             lp.style.animation = "LaunchPadBack 0.3s ease-in-out forwards";
-            lp_bg.animation = "opacityBack 0.3s ease-in-out forwards";
+            lp_bg.style.animation = "opacityBack 0.3s ease-in-out forwards";
             topbar.style.animation = "opacityBegin 0.2s ease-in-out forwards";
             setTimeout(function () {
                 lp_bg.style.zIndex = 0;
@@ -287,7 +310,7 @@ function OpenApp(img, index) {
                 window.map_div.id = `map-window`;
                 window.map_div.classList.add("window");
                 window.map_div.innerHTML = maps_code;
-                window.map_div.style.zIndex = index;
+                window.map_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.map_div);
                 makeDraggable(window.map_div);
                 window.map_div.dataset.minWidth = "640";
@@ -295,13 +318,59 @@ function OpenApp(img, index) {
                 makeResizable(window.map_div);
                 map_state = true;
                 selectWindowInit();
+                requestAnimationFrame(() => {
+                    const mapFrame = window.map_div.querySelector('#main-map');
+                    if (mapFrame && mapFrame.dataset.src && mapFrame.src !== mapFrame.dataset.src) {
+                        mapFrame.src = mapFrame.dataset.src;
+                    }
+                });
             } else {
                 window.map_div.style.zIndex = window.index * 2;
             }
             lp_status = false;
         }
         topbarText("Maps", "File", "Edit", "View", "Window", "Help", "", "", "", "");
-    }
+    } else if (altText == "Terminal") {
+        if (lp_status == false) {
+            if (terminal_state != true) {
+                window.terminal_div = document.createElement("div");
+                window.terminal_div.id = `terminal-window`;
+                window.terminal_div.classList.add("window");
+                window.terminal_div.innerHTML = terminal_code;
+                window.terminal_div.style.zIndex = nextIndex;
+                desktop.appendChild(window.terminal_div);
+                makeDraggable(window.terminal_div);
+                makeResizable(window.terminal_div);
+                terminal_state = true;
+                selectWindowInit();
+            } else {
+                window.terminal_div.style.zIndex = window.index * 2;
+            }
+        } else {
+            lp.style.animation = "LaunchPadBack 0.3s ease-in-out forwards";
+            lp_bg.style.animation = "opacityBack 0.3s ease-in-out forwards";
+            topbar.style.animation = "opacityBegin 0.2s ease-in-out forwards";
+            setTimeout(function () {
+                lp_bg.style.zIndex = 0;
+            }, 300);
+            if (terminal_state != true) {
+                window.terminal_div = document.createElement("div");
+                window.terminal_div.id = `terminal-window`;
+                window.terminal_div.classList.add("window");
+                window.terminal_div.innerHTML = terminal_code;
+                window.terminal_div.style.zIndex = nextIndex;
+                desktop.appendChild(window.terminal_div);
+                makeDraggable(window.terminal_div);
+                makeResizable(window.terminal_div);
+                terminal_state = true;
+                selectWindowInit();
+            } else {
+                window.terminal_div.style.zIndex = window.index * 2;
+            }
+            lp_status = false;
+        }
+        topbarText("Terminal", "Shell", "Edit", "View", "Window", "Help", "", "", "", "");
+     }
     else {
         null;
     }

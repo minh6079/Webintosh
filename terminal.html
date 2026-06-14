@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>wterm</title>
+    <link rel="stylesheet" href="https://esm.sh/@wterm/dom/css">
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: #0d1117;
+      }
+
+      #terminal {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="terminal" role="textbox" aria-label="Terminal" aria-multiline="true" aria-roledescription="terminal"></div>
+    <script type="module">
+      import {
+        WTerm
+      } from 'https://esm.sh/@wterm/dom';
+      import {
+        GhosttyCore
+      } from 'https://esm.sh/@wterm/ghostty';
+      import {
+        BashShell
+      } from 'https://esm.sh/@wterm/just-bash';
+      const core = await GhosttyCore.load({ scrollbackLimit: 1000 });
+      const term = new WTerm(document.getElementById('terminal'), {
+        core
+      });
+      await term.init();
+      const shell = new BashShell({
+        cwd: '/home/alex',
+        greeting: ['\x1b[1;32m  Welcome back, Alex\x1b[0m', '\x1b[90m  Node 20.11.0  â€¢  npm 10.2.4  â€¢  git 2.44.0\x1b[0m', '', '  Try: \x1b[33mls\x1b[0m, \x1b[33mcat\x1b[0m, \x1b[33mcd\x1b[0m, \x1b[33mpwd\x1b[0m', '', ],
+        env: {
+          USER: 'alex',
+          HOME: '/home/alex',
+          EDITOR: 'vim',
+          NODE_ENV: 'development',
+          TERM: 'xterm-256color',
+        },
+        files: {
+          '/home/alex/.bashrc': ['# ~/.bashrc', 'export PATH="$HOME/.local/bin:$PATH"', 'export EDITOR=vim', 'export HISTSIZE=10000', '', 'alias ll="ls -lah"', 'alias gs="git status"', 'alias gd="git diff"', 'alias gl="git log --oneline --graph --decorate -20"', 'alias dc="docker compose"', '', '# nvm', 'export NVM_DIR="$HOME/.nvm"', '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"', ].join('\n'),
+          '/home/alex/.gitconfig': ['[user]', '  name = Alex Rivera', '  email = alex@example.com', '[core]', '  editor = vim', '  autocrlf = input', '[alias]', '  st = status', '  co = checkout', '  br = branch', '  lg = log --oneline --graph --decorate', '[pull]', '  rebase = true', '[push]', '  default = current', ].join('\n'),
+          '/home/alex/.ssh/config': ['Host github.com', '  HostName github.com', '  User git', '  IdentityFile ~/.ssh/id_ed25519', '', 'Host prod-server', '  HostName 10.0.1.42', '  User deploy', '  IdentityFile ~/.ssh/id_ed25519', '  Port 22', ].join('\n'),
+          '/home/alex/projects/api-service/README.md': ['# api-service', '', 'REST API for the platform backend. Built with Fastify + TypeScript.', '', '## Getting started', '', '```bash', 'cp .env.example .env', 'npm install', 'npm run dev', '```', '', '## Scripts', '', '| Command | Description |', '|---|---|', '| `npm run dev` | Start dev server with hot reload |', '| `npm run build` | Compile TypeScript to `dist/` |', '| `npm test` | Run Jest test suite |', '| `npm run lint` | ESLint + Prettier check |', '', '## Stack', '', '- **Runtime**: Node.js 20 LTS', '- **Framework**: Fastify 4', '- **ORM**: Prisma 5', '- **DB**: PostgreSQL 16', '- **Auth**: JWT (RS256)', '- **Tests**: Jest + Supertest', ].join('\n'),
+          '/home/alex/projects/api-service/package.json': JSON.stringify({
+            name: 'api-service',
+            version: '2.4.1',
+            description: 'Platform REST API',
+            main: 'dist/index.js',
+            scripts: {
+              dev: 'tsx watch src/index.ts',
+              build: 'tsc --project tsconfig.build.json',
+              start: 'node dist/index.js',
+              test: 'jest --coverage',
+              lint: 'eslint src --ext .ts',
+              'db:migrate': 'prisma migrate dev',
+              'db:seed': 'tsx prisma/seed.ts',
+            },
+            dependencies: {
+              fastify: '^4.26.2',
+              '@fastify/jwt': '^8.0.1',
+              '@fastify/cors': '^9.0.1',
+              '@prisma/client': '^5.10.2',
+              zod: '^3.22.4',
+              pino: '^8.19.0',
+            },
+            devDependencies: {
+              typescript: '^5.4.2',
+              tsx: '^4.7.1',
+              jest: '^29.7.0',
+              prisma: '^5.10.2',
+              eslint: '^8.57.0',
+            },
+          }, null, 2),
+          '/home/alex/projects/api-service/tsconfig.json': JSON.stringify({
+            compilerOptions: {
+              target: 'ES2022',
+              module: 'NodeNext',
+              moduleResolution: 'NodeNext',
+              outDir: './dist',
+              rootDir: './src',
+              strict: true,
+              esModuleInterop: true,
+              skipLibCheck: true,
+              resolveJsonModule: true,
+              declaration: true,
+              declarationMap: true,
+              sourceMap: true,
+            },
+            include: ['src/**/*'],
+            exclude: ['node_modules', 'dist'],
+          }, null, 2),
+          '/home/alex/projects/api-service/.env.example': ['# Server', 'PORT=3000', 'HOST=0.0.0.0', 'NODE_ENV=development', '', '# Database', 'DATABASE_URL="postgresql://postgres:password@localhost:5432/api_dev"', '', '# Auth', 'JWT_SECRET=change-me-in-production', 'JWT_EXPIRES_IN=7d', '', '# Redis', 'REDIS_URL=redis://localhost:6379', '', '# External APIs', 'STRIPE_SECRET_KEY=sk_test_...', 'SENDGRID_API_KEY=SG...', ].join('\n'),
+          '/home/alex/projects/api-service/.gitignore': ['node_modules/', 'dist/', '.env', '*.log', 'coverage/', '.DS_Store', 'prisma/migrations/dev/', ].join('\n'),
+          '/home/alex/projects/api-service/src/index.ts': ["import Fastify from 'fastify';", "import { userRoutes } from './routes/users.js';", "import { authRoutes } from './routes/auth.js';", "import { healthRoutes } from './routes/health.js';", '', 'const app = Fastify({ logger: true });', '', "app.register(authRoutes,   { prefix: '/auth' });", "app.register(userRoutes,   { prefix: '/users' });", "app.register(healthRoutes, { prefix: '/health' });", '', 'const start = async () => {', '  try {', '    await app.listen({ port: Number(process.env.PORT ?? 3000) });', '  } catch (err) {', '    app.log.error(err);', '    process.exit(1);', '  }', '};', '', 'start();', ].join('\n'),
+          '/home/alex/projects/api-service/src/routes/users.ts': ["import type { FastifyPluginAsync } from 'fastify';", "import { z } from 'zod';", '', 'const CreateUserSchema = z.object({', '  email: z.string().email(),', '  name:  z.string().min(2).max(100),', "  role:  z.enum(['admin', 'member']).default('member'),", '});', '', 'export const userRoutes: FastifyPluginAsync = async (app) => {', "  app.get('/', async (req, reply) => {", '    // TODO: paginate', '    return reply.send({ users: [] });', '  });', '', "  app.post('/', async (req, reply) => {", '    const body = CreateUserSchema.parse(req.body);', '    // TODO: persist to DB', '    return reply.status(201).send({ id: crypto.randomUUID(), ...body });', '  });', '};', ].join('\n'),
+          '/home/alex/projects/api-service/src/routes/auth.ts': ["import type { FastifyPluginAsync } from 'fastify';", '', 'export const authRoutes: FastifyPluginAsync = async (app) => {', "  app.post('/login', async (req, reply) => {", '    const { email, password } = req.body as { email: string; password: string };', '    // TODO: verify credentials against DB', "    const token = 'eyJhbGciOiJSUzI1NiJ9...';", '    return reply.send({ token });', '  });', '', "  app.post('/logout', async (req, reply) => {", '    // TODO: invalidate token in Redis', '    return reply.status(204).send();', '  });', '};', ].join('\n'),
+          '/home/alex/projects/api-service/src/routes/health.ts': ["import type { FastifyPluginAsync } from 'fastify';", '', 'export const healthRoutes: FastifyPluginAsync = async (app) => {', "  app.get('/', async (_req, reply) => {", "    return reply.send({ status: 'ok', uptime: process.uptime() });", '  });', '};', ].join('\n'),
+          '/home/alex/projects/api-service/src/lib/db.ts': ["import { PrismaClient } from '@prisma/client';", '', 'declare global {', '  // eslint-disable-next-line no-var', '  var __prisma: PrismaClient | undefined;', '}', '', 'export const db = globalThis.__prisma ?? new PrismaClient();', '', "if (process.env.NODE_ENV !== 'production') {", '  globalThis.__prisma = db;', '}', ].join('\n'),
+          '/home/alex/projects/api-service/prisma/schema.prisma': ['generator client {', '  provider = "prisma-client-js"', '}', '', 'datasource db {', '  provider = "postgresql"', '  url      = env("DATABASE_URL")', '}', '', 'model User {', '  id        String   @id @default(cuid())', '  email     String   @unique', '  name      String', '  role      Role     @default(MEMBER)', '  createdAt DateTime @default(now())', '  updatedAt DateTime @updatedAt', '}', '', 'enum Role {', '  ADMIN', '  MEMBER', '}', ].join('\n'),
+          '/home/alex/projects/api-service/tests/users.test.ts': ["import { build } from './helpers/app.js';", '', "describe('GET /users', () => {", "  it('returns 200 with empty list', async () => {", '    const app = await build();', "    const res = await app.inject({ method: 'GET', url: '/users' });", '    expect(res.statusCode).toBe(200);', "    expect(res.json()).toMatchObject({ users: [] });", '  });', '});', '', "describe('POST /users', () => {", "  it('creates a user', async () => {", '    const app = await build();', '    const res = await app.inject({', "      method: 'POST',", "      url: '/users',", "      payload: { email: 'test@example.com', name: 'Test User' },", '    });', '    expect(res.statusCode).toBe(201);', "    expect(res.json()).toHaveProperty('id');", '  });', '});', ].join('\n'),
+          '/home/alex/projects/api-service/Dockerfile': ['FROM node:20-alpine AS builder', 'WORKDIR /app', 'COPY package*.json ./', 'RUN npm ci', 'COPY . .', 'RUN npm run build', '', 'FROM node:20-alpine AS runner', 'WORKDIR /app', 'ENV NODE_ENV=production', 'COPY --from=builder /app/dist ./dist', 'COPY --from=builder /app/node_modules ./node_modules', 'COPY package.json .', 'EXPOSE 3000', 'CMD ["node", "dist/index.js"]', ].join('\n'),
+          '/home/alex/projects/api-service/docker-compose.yml': ['services:', '  api:', '    build: .', '    ports: ["3000:3000"]', '    env_file: .env', '    depends_on: [db, redis]', '', '  db:', '    image: postgres:16-alpine', '    environment:', '      POSTGRES_DB: api_dev', '      POSTGRES_PASSWORD: password', '    volumes: [pgdata:/var/lib/postgresql/data]', '    ports: ["5432:5432"]', '', '  redis:', '    image: redis:7-alpine', '    ports: ["6379:6379"]', '', 'volumes:', '  pgdata:', ].join('\n'),
+          '/home/alex/projects/dashboard/README.md': ['# dashboard', '', 'Internal analytics dashboard. Next.js 14 + Tailwind.', '', '```bash', 'npm install && npm run dev', '```', ].join('\n'),
+          '/home/alex/projects/dashboard/package.json': JSON.stringify({
+            name: 'dashboard',
+            version: '1.0.0',
+            scripts: {
+              dev: 'next dev',
+              build: 'next build',
+              start: 'next start'
+            },
+            dependencies: {
+              next: '^14.1.0',
+              react: '^18.2.0',
+              'react-dom': '^18.2.0'
+            },
+            devDependencies: {
+              tailwindcss: '^3.4.1',
+              typescript: '^5.4.2'
+            },
+          }, null, 2),
+          '/home/alex/notes/standup.md': ['# Standup notes', '', '## 2024-03-15', '- Merged PR #142 â€” rate limiting middleware', '- Investigating slow query on /users endpoint (N+1)', '- Blocked: waiting on DevOps for staging DB credentials', '', '## 2024-03-14', '- Reviewed PRs #138, #139', '- Added Zod validation to POST /users', '- Fixed JWT expiry bug (was using seconds, should be ms)', ].join('\n'),
+          '/home/alex/notes/commands.md': ['# Useful commands', '', '## Docker', '```bash', 'docker compose up -d          # start services', 'docker compose logs -f api    # tail api logs', 'docker exec -it  < id > psql...# connect to postgres ',
+            '```', '', '## Prisma', '```bash', 'npx prisma studio             # GUI for DB', 'npx prisma migrate dev        # apply migrations', 'npx prisma db push            # push schema (no migration)', '```', '', '## Git', '```bash', 'git log --oneline --graph -20', 'git stash list', 'git bisect start', '```',
+          ].join('\n'),
+          '/home/alex/notes/scratch.sh': ['#!/usr/bin/env bash', '# one-off migration script â€” DO NOT run in prod without review', 'set -euo pipefail', '', 'DB_URL="${DATABASE_URL:?DATABASE_URL not set}"', '', 'psql "$DB_URL" < < SQL ',
+            '  ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "avatarUrl" TEXT;', "  UPDATE \"User\" SET \"avatarUrl\" = 'https://api.dicebear.com/7.x/initials/svg?seed=' || name;", 'SQL', '', 'echo "Done."',
+          ].join('\n'),
+        },
+      });
+      await shell.attach(data => term.write(data));
+      term.onData = data => shell.handleInput(data);
+    </script>
+  </body>
+</html>

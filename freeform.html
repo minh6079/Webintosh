@@ -13,8 +13,9 @@
   --shadow:0 8px 32px rgba(0,0,0,0.13),0 2px 8px rgba(0,0,0,0.07);
   --r:14px;--hs:9px;
 }
-body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;overflow:hidden;background:var(--bg);touch-action:none;user-select:none;}
-#board{position:fixed;inset:0;overflow:hidden;touch-action:none;}
+html,body{width:100%;height:100%;overflow:hidden;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--bg);touch-action:none;user-select:none;position:fixed;inset:0;}
+#board{position:fixed;inset:0;overflow:hidden;touch-action:none;overscroll-behavior:none;}
 #gridCanvas,#mainCanvas,#overlayCanvas{position:absolute;top:0;left:0;}
 #gridCanvas,#overlayCanvas{pointer-events:none;}
 #objectLayer{position:absolute;top:0;left:0;width:0;height:0;pointer-events:none;}

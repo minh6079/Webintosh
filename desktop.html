@@ -62,28 +62,28 @@
     <main id="desktop"> <!-- Desktop -->
         <footer id="dock"> <!-- Dock -->
             <div class="icns" id="icns">
-                <img src="./icons/finder.svg" alt="Finder" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/launchpad.svg" alt="Launchpad" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/safari.svg" alt="Safari" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/message.svg" alt="Messages" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/mail.svg" alt="Mail" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/map.svg" alt="Maps" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/photo.svg" alt="Photos" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/facetime.svg" alt="FaceTime" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/date.svg" alt="Calendar" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/people.svg" alt="Contacts" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/things.svg" alt="Reminders" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/note.svg" alt="Notes" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./images/AppIcon.png" alt="Freeform" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/tv.svg" alt="TV" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/music.svg" alt="Music" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/fm.svg" alt="Podcasts" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./images/AppIcon 102.png" alt="App Store" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./icons/settings.svg" alt="System Preferences" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Finder.png" alt="Finder" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Launchpad.png" alt="Launchpad" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Safari.png" alt="Safari" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Messages.png" alt="Messages" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Mail.png" alt="Mail" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Maps.png" alt="Maps" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Photos.png" alt="Photos" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/FaceTime.png" alt="FaceTime" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Calendar.png" alt="Calendar" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Contacts.png" alt="Contacts" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Reminders.png" alt="Reminders" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Notes.png" alt="Notes" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Freeform.png" alt="Freeform" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/TV.png" alt="TV" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Music.png" alt="Music" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/Terminal.png" alt="Terminal" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/App Store.png" alt="App Store" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/System Preferences.png" alt="System Preferences" onclick="OpenApp(this, maxZIndex)" />
                 <hr>
-                <img src="./images/downloads.png" alt="Downloads" onclick="OpenApp(this, maxZIndex)" width="64"
+                <img src="./dock/downloads.png" alt="Downloads" onclick="OpenApp(this, maxZIndex)" width="64"
                     height="64" />
-                <img src="./icons/trash-full.svg" alt="Trash" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/trash-full.png" alt="Trash" onclick="OpenApp(this, maxZIndex)" />
             </div>
         </footer>
     </main>
@@ -152,7 +152,7 @@
 
         </div>
     </div>
-    <div id="lp-bg"> <!-- LaunchPad App -->
+    <div id="lp-bg" onclick="closeLaunchpad()"> <!-- LaunchPad App -->
         <div id="launchpad">
             <div class="s">
                 <h5>Search</h5>
@@ -250,6 +250,10 @@
                 <h5>Freeform</h5>
             </div>
             <div class="ct">
+                <img src="./images/terminal.png" alt="Terminal" onclick="OpenApp(this)" />
+                <h5>Terminal</h5>
+            </div>
+            <div class="ct">
                 <img src="./images/AppIcon 137.png" alt="Home" onclick="OpenApp(this)" />
                 <h5>Home</h5>
             </div>
@@ -264,10 +268,6 @@
             <div class="ct">
                 <img src="./images/AppIcon 109.png" alt="Mission Center" onclick="OpenApp(this)" />
                 <h5>Mission Control</h5>
-            </div>
-            <div class="ct">
-                <img src="./images/SystemPrefApp 2.png" alt="System Preferences" onclick="OpenApp(this)" />
-                <h5>System Preferences</h5>
             </div>
         </div>
     </div>
@@ -359,7 +359,7 @@
                     <div id="page-tool"></div>
                     <img src="./images/plus@10x.png" width="20" height="20" /> -->
             </div>
-            <iframe id="main-maps" src="https://maps.apple.com"></iframe>
+            <iframe id="main-maps" data-src="https://maps.apple.com" src="about:blank"></iframe>
         </div>
         <div id="settings" class="window">
             <div id="sidebar">
@@ -459,6 +459,7 @@
         let freeform_state = false;
         let notes_state = false;
         let map_state = false;
+        let terminal_state = false;
         let maxZIndex = 2;
 
         let desktop = $$("desktop");

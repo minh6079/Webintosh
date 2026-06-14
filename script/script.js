@@ -66,6 +66,12 @@ function makeDraggable(element) {
         offsetX = e.clientX - element.getBoundingClientRect().left;
         offsetY = e.clientY - element.getBoundingClientRect().top;
         element.style.position = 'absolute';
+        if (window.getComputedStyle(element).transform !== 'none') {
+            const rect = element.getBoundingClientRect();
+            element.style.left = `${rect.left}px`;
+            element.style.top = `${rect.top}px`;
+            element.style.transform = 'none';
+        }
     });
 
     element.addEventListener('pointermove', (e) => {
@@ -182,11 +188,10 @@ function makeResizable(element) {
     element.appendChild(handle);
 
     const styles = window.getComputedStyle(element);
-    const rect = element.getBoundingClientRect();
     const minWidth = parseFloat(element.dataset.minWidth) || parseFloat(styles.minWidth) || 240;
     const minHeight = parseFloat(element.dataset.minHeight) || parseFloat(styles.minHeight) || 160;
-    const maxWidth = parseFloat(element.dataset.maxWidth) || rect.width;
-    const maxHeight = parseFloat(element.dataset.maxHeight) || rect.height;
+    const maxWidth = parseFloat(element.dataset.maxWidth) || Number.POSITIVE_INFINITY;
+    const maxHeight = parseFloat(element.dataset.maxHeight) || Number.POSITIVE_INFINITY;
     let isResizing = false;
     let startX = 0;
     let startY = 0;
@@ -507,6 +512,8 @@ function updateTopbarForWindow(win) {
         topbarText("Notes", "File", "Edit", "View", "Window", "Help", "", "", "", "");
     } else if (win.id == 'map-window') {
         topbarText("Maps", "File", "Edit", "View", "Window", "Help", "", "", "", "");
+    } else if (win.id == 'terminal-window') {
+        topbarText("Terminal", "Shell", "Edit", "View", "Window", "Help", "", "", "", "");
     } else {
         topbarText("Finder", "File", "Edit", "View", "Go", "Window", "Help", "", "", "");
     }
