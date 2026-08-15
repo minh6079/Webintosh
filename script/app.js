@@ -23,6 +23,9 @@ function exit(app, state) {
     } else if (state == "terminal") {
         terminal_state = false;
         topbarText("Finder", "File", "Edit", "View", "Go", "Window", "Help", "", "", "");
+    } else if (state == "calculator") {
+        calculator_state = false;
+        topbarText("Finder", "File", "Edit", "View", "Go", "Window", "Help", "", "", "");
     } else if (state == "hardware") {
         hardware_state = false;
     }
@@ -150,13 +153,17 @@ function OpenApp(img, index) {
                 window.setting_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.setting_div);
                 makeDraggable(window.setting_div);
-                window.setting_div.dataset.minWidth = "560";
-                window.setting_div.dataset.minHeight = "480";
+                window.setting_div.dataset.minWidth = "690";
+                window.setting_div.dataset.minHeight = "350";
+                window.setting_div.dataset.maxWidth = "1100";
+                window.setting_div.dataset.maxHeight = "780";
                 makeResizable(window.setting_div);
                 setting_state = true;
+                syncSettingsPreview(window.setting_div);
                 selectWindowInit();
             } else {
                 window.setting_div.style.zIndex = window.index * 2;
+                syncSettingsPreview(window.setting_div);
             }
         } else {
             lp.style.animation = "LaunchPadBack 0.3s ease-in-out forwards";
@@ -173,13 +180,17 @@ function OpenApp(img, index) {
                 window.setting_div.style.zIndex = nextIndex;
                 desktop.appendChild(window.setting_div);
                 makeDraggable(window.setting_div);
-                window.setting_div.dataset.minWidth = "560";
-                window.setting_div.dataset.minHeight = "480";
+                window.setting_div.dataset.minWidth = "690";
+                window.setting_div.dataset.minHeight = "350";
+                window.setting_div.dataset.maxWidth = "1100";
+                window.setting_div.dataset.maxHeight = "780";
                 makeResizable(window.setting_div);
                 setting_state = true;
+                syncSettingsPreview(window.setting_div);
                 selectWindowInit();
             } else {
                 window.setting_div.style.zIndex = window.index * 2;
+                syncSettingsPreview(window.setting_div);
             }
             lp_status = false;
         }
@@ -370,6 +381,21 @@ function OpenApp(img, index) {
             lp_status = false;
         }
         topbarText("Terminal", "Shell", "Edit", "View", "Window", "Help", "", "", "", "");
+     } else if (altText == "Calculator") {
+        if (calculator_state != true) {
+            window.calculator_div = document.createElement("div");
+            window.calculator_div.id = `calc-window`;
+            window.calculator_div.classList.add("window", "calc-app-wrapper");
+            window.calculator_div.innerHTML = calculator_code;
+            window.calculator_div.style.zIndex = nextIndex;
+            desktop.appendChild(window.calculator_div);
+            makeDraggable(window.calculator_div);
+            calculator_state = true;
+            selectWindowInit();
+        } else {
+            window.calculator_div.style.zIndex = nextIndex * 2;
+        }
+        topbarText("Calculator", "File", "Edit", "View", "Window", "Help", "", "", "", "");
      }
     else {
         null;
@@ -391,6 +417,30 @@ function getWallpaper() {
             reader.readAsDataURL(file);
         }
     });
+}
+
+// Keep the settings window's wallpaper preview/title in sync with the
+// currently-selected wallpaper (wallpaper_now lives in script.js).
+function syncSettingsPreview(div) {
+    if (!div) {
+        return;
+    }
+    const titleEl = div.querySelector("#wallpaper-looking-new");
+    const prevEl = div.querySelector("#by-looking-new");
+    if (!titleEl || !prevEl) {
+        return;
+    }
+    const match = String(wallpaper_now || "Sequoia-Day").match(/^([A-Za-z]+)-(Day|Night)$/);
+    const name = match ? match[1] : "Sequoia";
+    const prettyMap = {
+        BigSur: "Beach",
+        Monterey: "Lake",
+        Ventura: "Desert",
+        Sonoma: "Cliff",
+        Sequoia: "Default"
+    };
+    titleEl.textContent = prettyMap[name] || name;
+    prevEl.src = `./images/${wallpaper_now}.jpg`;
 }
 
 function AboutHardWare(index) {

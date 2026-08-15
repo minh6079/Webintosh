@@ -387,40 +387,136 @@ function setTopbar(color) {
     }
 }
 
-let wallpaper_now = 'Sequoia-Day';
+function loadWallpaperPreference() {
+    try {
+        const saved = localStorage.getItem("wallpaper_now");
+        if (saved && /^[A-Za-z]+-(Day|Night)$/.test(saved)) {
+            return saved;
+        }
+    } catch (error) {
+        // localStorage may not be available (private mode / disabled cookies)
+    }
+    return null;
+}
+
+function saveWallpaperPreference(value) {
+    try {
+        localStorage.setItem("wallpaper_now", value);
+    } catch (error) {
+        // localStorage may not be available; silently ignore.
+    }
+}
+
+function applyWallpaperByName(name, skipDom) {
+    // name: e.g. "BigSur-Day", "Monterey-Night". Sets bg + (optional) DOM preview.
+    if (!/^[A-Za-z]+-(Day|Night)$/.test(name)) {
+        return;
+    }
+    bg.style.backgroundImage = `url(./images/${name}.jpg)`;
+    wallpaper_now = name;
+    saveWallpaperPreference(name);
+    if (skipDom) {
+        return;
+    }
+    const wallpaperId = $$('wallpaper-looking-new');
+    const wallpaperLooking = $$('by-looking-new');
+    const match = name.match(/^([A-Za-z]+)-(Day|Night)$/);
+    const stem = match ? match[1] : "Sequoia";
+    const prettyMap = {
+        BigSur: "Beach",
+        Monterey: "Lake",
+        Ventura: "Desert",
+        Sonoma: "Cliff",
+        Sequoia: "Default"
+    };
+    if (wallpaperId) {
+        wallpaperId.innerHTML = prettyMap[stem] || stem;
+    }
+    if (wallpaperLooking) {
+        wallpaperLooking.src = `./images/${name}.jpg`;
+    }
+    const isLightBg = stem === "Sonoma";
+    // Sonoma shows a light topbar in day; everything else uses black text.
+    setTopbar(isLightBg ? 'white' : 'black');
+}
+
+let wallpaper_now = loadWallpaperPreference() || 'Sequoia-Day';
+
+// Apply the persisted wallpaper once the rest of the page has finished
+// setting up `bg`. `bg` is declared by the inline script in desktop.html
+// that runs after this file, so DOMContentLoaded is the safest hook.
+document.addEventListener("DOMContentLoaded", () => {
+    if (typeof bg === "undefined" || !bg) {
+        return;
+    }
+    bg.style.backgroundImage = `url(./images/${wallpaper_now}.jpg)`;
+    if (typeof setTopbar === "function") {
+        const stem = String(wallpaper_now).match(/^([A-Za-z]+)-(Day|Night)$/);
+        const isNight = String(wallpaper_now).endsWith("Night");
+        const isSonomaDay = !!(stem && stem[1] === "Sonoma" && !isNight);
+        // Night always uses a light topbar; Sonoma-Day also; everything else black.
+        setTopbar(isNight || isSonomaDay ? "white" : "black");
+    }
+    // The static legacy settings panel inside #old (hidden) carries the
+    // same wallpaper preview, but its two IDs lack the "-new" suffix.
+    const legacyTitle = document.querySelector('p#wallpaper-looking');
+    const legacyImg = document.querySelector('img#by-looking');
+    if (legacyTitle || legacyImg) {
+        const stem = String(wallpaper_now).match(/^([A-Za-z]+)-(Day|Night)$/);
+        const prettyMap = {
+            BigSur: "Beach",
+            Monterey: "Lake",
+            Ventura: "Desert",
+            Sonoma: "Cliff",
+            Sequoia: "Default"
+        };
+        const pretty = prettyMap[stem && stem[1]] || (stem && stem[1]) || "Default";
+        if (legacyTitle) {
+            legacyTitle.textContent = pretty;
+        }
+        if (legacyImg) {
+            legacyImg.src = `./images/${wallpaper_now}.jpg`;
+        }
+    }
+});
 
 function change_wall(wallpaper) {
     let wallpaperId = $$('wallpaper-looking-new');
     let wallpaperLooking = $$('by-looking-new');
     wallpaper = wallpaper.toLowerCase();
-    if (wallpaper == 'bigsur') {
+    if (wallpaper == 'beach') {
         bg.style.backgroundImage = `url(./images/BigSur-Day.jpg)`;
         wallpaper_now = 'BigSur-Day';
-        wallpaperId.innerHTML = 'Big Sur';
+        saveWallpaperPreference(wallpaper_now);
+        wallpaperId.innerHTML = 'Beach';
         wallpaperLooking.src = `./images/BigSur-Day.jpg`;
         setTopbar('black');
-    } else if (wallpaper == 'monterey') {
+    } else if (wallpaper == 'lake') {
         bg.style.backgroundImage = `url(./images/Monterey-Day.jpg)`;
         wallpaper_now = 'Monterey-Day';
-        wallpaperId.innerHTML = 'Monterey';
+        saveWallpaperPreference(wallpaper_now);
+        wallpaperId.innerHTML = 'Lake';
         wallpaperLooking.src = `./images/Monterey-Day.jpg`;
         setTopbar('black');
-    } else if (wallpaper == 'ventura') {
+    } else if (wallpaper == 'desert') {
         bg.style.backgroundImage = `url(./images/Ventura-Day.jpg)`;
         wallpaper_now = 'Ventura-Day';
-        wallpaperId.innerHTML = 'Ventura';
+        saveWallpaperPreference(wallpaper_now);
+        wallpaperId.innerHTML = 'Desert';
         wallpaperLooking.src = `./images/Ventura-Day.jpg`;
         setTopbar('black');
-    } else if (wallpaper == 'sonoma') {
+    } else if (wallpaper == 'cliff') {
         bg.style.backgroundImage = `url(./images/Sonoma-Day.jpg)`;
         wallpaper_now = 'Sonoma-Day';
-        wallpaperId.innerHTML = 'Sonoma';
+        saveWallpaperPreference(wallpaper_now);
+        wallpaperId.innerHTML = 'Cliff';
         wallpaperLooking.src = `./images/Sonoma-Day.jpg`;
         setTopbar('white');
-    } else if (wallpaper == 'sequoia') {
+    } else if (wallpaper == 'default') {
         bg.style.backgroundImage = `url(./images/Sequoia-Day.jpg)`;
         wallpaper_now = 'Sequoia-Day';
-        wallpaperId.innerHTML = 'Sequoia';
+        saveWallpaperPreference(wallpaper_now);
+        wallpaperId.innerHTML = 'Default';
         wallpaperLooking.src = `./images/Sequoia-Day.jpg`;
         setTopbar('black');
     } else if (wallpaper == 'auto') {
@@ -428,16 +524,19 @@ function change_wall(wallpaper) {
         let hours = now.getHours().toString().padStart(2, '0');
         if (hours >= 19) {
             wallpaper_now = wallpaper_now.replace("Day", "Night");
+            saveWallpaperPreference(wallpaper_now);
             bg.style.backgroundImage = `url(./images/${wallpaper_now}.jpg)`;
             wallpaperLooking.src = `./images/${wallpaper_now}.jpg`;
             setTopbar('white');
         } else if (hours < 5) {
             wallpaper_now = wallpaper_now.replace("Day", "Night");
+            saveWallpaperPreference(wallpaper_now);
             bg.style.backgroundImage = `url(./images/${wallpaper_now}.jpg)`;
             wallpaperLooking.src = `./images/${wallpaper_now}.jpg`;
             setTopbar('white');
         } else {
             wallpaper_now = wallpaper_now.replace("Night", "Day");
+            saveWallpaperPreference(wallpaper_now);
             bg.style.backgroundImage = `url(./images/${wallpaper_now}.jpg)`;
             wallpaperLooking.src = `./images/${wallpaper_now}.jpg`;
             if (wallpaper_now == 'Sonoma-Day') {
@@ -448,6 +547,7 @@ function change_wall(wallpaper) {
         }
     } else if (wallpaper == 'day') {
         wallpaper_now = wallpaper_now.replace("Night", "Day");
+        saveWallpaperPreference(wallpaper_now);
         bg.style.backgroundImage = `url(./images/${wallpaper_now}.jpg)`;
         wallpaperLooking.src = `./images/${wallpaper_now}.jpg`;
         if (wallpaper_now == 'Sonoma-Day') {
@@ -457,6 +557,7 @@ function change_wall(wallpaper) {
         }
     } else if (wallpaper == 'night') {
         wallpaper_now = wallpaper_now.replace("Day", "Night");
+        saveWallpaperPreference(wallpaper_now);
         bg.style.backgroundImage = `url(./images/${wallpaper_now}.jpg)`;
         wallpaperLooking.src = `./images/${wallpaper_now}.jpg`;
         setTopbar('white');
@@ -514,6 +615,8 @@ function updateTopbarForWindow(win) {
         topbarText("Maps", "File", "Edit", "View", "Window", "Help", "", "", "", "");
     } else if (win.id == 'terminal-window') {
         topbarText("Terminal", "Shell", "Edit", "View", "Window", "Help", "", "", "", "");
+    } else if (win.id == 'calc-window') {
+        topbarText("Calculator", "File", "Edit", "View", "Window", "Help", "", "", "", "");
     } else {
         topbarText("Finder", "File", "Edit", "View", "Go", "Window", "Help", "", "", "");
     }

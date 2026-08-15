@@ -118,12 +118,12 @@ let settings_code = `
 </div>
 <div id="divider-edge"></div>
 <div id="main">
-    <div style="display: flex; flex-direction: row;">
+    <div style="display: flex; flex-direction: row; gap: 16px; align-items: flex-start; min-width: 0;">
         <img id="by-looking-new" src="./images/Sequoia-Day.jpg" width="160" height="90"
-            style="border-radius: 8px; border: solid 3px white" />
-        <div style="display: flex; flex-direction: column; justify-content: center;">
-            <section id="content-frame" style="width: 305px; margin-top: 0;">
-                <p id="wallpaper-looking-new">Sequoia</p>
+            style="border-radius: 8px; border: solid 3px white; flex: 0 0 auto;" />
+        <div style="display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; gap: 10px;">
+            <section id="content-frame" style="margin-top: 0;">
+                <p id="wallpaper-looking-new">Default</p>
                 <div
                     style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                     <div id="btn" onclick="change_wall('auto')">Auto</div>
@@ -131,14 +131,14 @@ let settings_code = `
                     <div id="btn" onclick="change_wall('night')">Dark</div>
                 </div>
             </section>
-            <section id="content-frame" style="width: 305px;">
+            <section id="content-frame">
                 <p id="wallpaper-looking">Show as Screen Saver</p>
                 <div
                     style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                     <div id="btn">Off</div>
                 </div>
             </section>
-            <section id="content-frame" style="width: 305px; margin-bottom: auto; margin-top: 0;">
+            <section id="content-frame">
                 <p id="wallpaper-looking">Show Across All Desktops</p>
                 <div
                     style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
@@ -150,11 +150,11 @@ let settings_code = `
     <section id="content-frame">
         <p id="sub-title">Wallpaper</p>
         <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
-            <div id="btn" onclick="change_wall('bigsur')">Big Sur</div>
-            <div id="btn" onclick="change_wall('monterey')">Monterey</div>
-            <div id="btn" onclick="change_wall('ventura')">Ventura</div>
-            <div id="btn" onclick="change_wall('sonoma')">Sonoma</div>
-            <div id="btn" onclick="change_wall('sequoia')">Sequoia</div>
+            <div id="btn" onclick="change_wall('beach')">Beach</div>
+            <div id="btn" onclick="change_wall('lake')">Lake</div>
+            <div id="btn" onclick="change_wall('desert')">Desert</div>
+            <div id="btn" onclick="change_wall('cliff')">Cliff</div>
+            <div id="btn" onclick="change_wall('default')">Default</div>
         </div>
     </section>
     <section id="content-frame">
@@ -239,6 +239,22 @@ let maps_code = `<div id="map-topbar">
 </div>
 <iframe id="main-map" data-src="https://maps.apple.com" src="about:blank">
 </iframe>`;
+
+let calculator_code = `<div id="calc-topbar">
+
+    <div id="win-tool">
+
+        <div id="close" onclick="exit('#calc-window', 'calculator')"></div>
+
+        <div id="minimize" onclick="small('calc-window')"></div>
+
+        <div id="zoom" onclick="big('calc-window')"></div>
+
+   </div>
+
+</div>
+
+<iframe id="main-calc" src="./calculator.html" allowtransparency="true"></iframe>`;
 
 let hardware_code = `<div id="win-tool" style="margin-top: 8px; margin-left: 8px;">
     <div id="close" onclick="exit('#hardware', 'hardware')"></div>

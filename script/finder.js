@@ -574,19 +574,84 @@ async function deleteItem(db, path) {
     });
 }
 
-function setSelection(root, item) {
+// Apply selection logic for a row click. mode is one of:
+//   "single": replace selection with this single item (default plain click)
+//   "toggle": add/remove this item (Cmd/Ctrl + click)
+//   "range":  extend from the anchor to this item (Shift + click; if `additive`
+//             is true, the range is unioned onto the existing selection, e.g.
+//             Cmd/Ctrl + Shift + click)
+function applyRowSelection(root, item, mode, additive) {
     const state = root.finderState;
-    state.selectedPath = item ? item.path : null;
-    state.selectedItem = item || null;
+    if (!state.selectedPaths) {
+        state.selectedPaths = new Set();
+    }
+
+    if (mode === "toggle") {
+        if (state.selectedPaths.has(item.path)) {
+            state.selectedPaths.delete(item.path);
+        } else {
+            state.selectedPaths.add(item.path);
+        }
+    } else if (mode === "range") {
+        const items = state.items;
+        const anchorIdx = state.anchorPath
+            ? items.findIndex((i) => i.path === state.anchorPath)
+            : -1;
+        const targetIdx = items.findIndex((i) => i.path === item.path);
+        if (anchorIdx === -1 || targetIdx === -1) {
+            state.selectedPaths.clear();
+            state.selectedPaths.add(item.path);
+        } else {
+            const start = Math.min(anchorIdx, targetIdx);
+            const end = Math.max(anchorIdx, targetIdx);
+            if (!additive) {
+                state.selectedPaths.clear();
+            }
+            for (let i = start; i <= end; i += 1) {
+                state.selectedPaths.add(items[i].path);
+            }
+        }
+    } else {
+        state.selectedPaths.clear();
+        state.selectedPaths.add(item.path);
+    }
+
+    state.anchorPath = item.path;
+
+    // Sync legacy single-item state to the first selected row in listing order,
+    // so context actions like Rename/Restore still have a usable primary item.
+    const ordered = state.items.filter((i) => state.selectedPaths.has(i.path));
+    state.selectedItem = ordered.length ? ordered[0] : null;
+    state.selectedPath = ordered.length ? ordered[0].path : null;
+    if (state.selectedPaths.size === 0) {
+        state.anchorPath = null;
+    }
+
     root.querySelectorAll(".finder-row").forEach((row) => {
-        row.classList.toggle("selected", item && row.dataset.path === item.path);
+        row.classList.toggle("selected", state.selectedPaths.has(row.dataset.path));
     });
-    renderPreview(root, item);
+    renderPreview(root);
     updateContextMenuState(root);
 }
 
+// Plain single-select used by the older callers (e.g. context-menu row click
+// when the row isn't already part of a multi-selection). New selection logic
+// lives in applyRowSelection.
+function setSelection(root, item) {
+    applyRowSelection(root, item, "single");
+}
+
 function clearSelection(root) {
-    setSelection(root, null);
+    const state = root.finderState;
+    if (state.selectedPaths) {
+        state.selectedPaths.clear();
+    }
+    state.anchorPath = null;
+    state.selectedPath = null;
+    state.selectedItem = null;
+    root.querySelectorAll(".finder-row").forEach((row) => row.classList.remove("selected"));
+    renderPreview(root);
+    updateContextMenuState(root);
 }
 
 async function emptyTrash(db) {
@@ -624,17 +689,19 @@ function updateContextMenuState(root) {
     const newFolderButton = menu.querySelector("[data-action='context-new-folder']");
     const newTextButton = menu.querySelector("[data-action='context-new-text']");
     const deleteButton = menu.querySelector("[data-action='context-delete']");
-    const hasSelection = !!root.finderState.selectedPath;
+    const selectedCount = (root.finderState.selectedPaths && root.finderState.selectedPaths.size) || 0;
+    const hasSingle = selectedCount > 0 && !!root.finderState.selectedItem;
+    const hasSelection = selectedCount > 0;
     const inTrash = isTrashView(root);
     if (restoreButton) {
         restoreButton.style.display = inTrash ? "flex" : "none";
-        restoreButton.disabled = !hasSelection;
+        restoreButton.disabled = !hasSingle;
     }
     if (sendButton) {
         sendButton.style.display = inTrash ? "none" : "flex";
         const item = root.finderState.selectedItem;
         const isText = item && item.type === "file" && (item.mime === "text/plain" || /\\.txt$/i.test(item.name));
-        sendButton.disabled = !hasSelection || !isText;
+        sendButton.disabled = !hasSingle || !isText;
     }
     if (emptyTrashButton) {
         emptyTrashButton.style.display = inTrash ? "flex" : "none";
@@ -642,7 +709,7 @@ function updateContextMenuState(root) {
     }
     if (renameButton) {
         renameButton.style.display = inTrash ? "none" : "flex";
-        renameButton.disabled = !hasSelection;
+        renameButton.disabled = !hasSingle;
     }
     if (newFolderButton) {
         newFolderButton.style.display = inTrash ? "none" : "flex";
@@ -655,15 +722,29 @@ function updateContextMenuState(root) {
 
 async function deleteSelection(root) {
     const state = root.finderState;
-    if (!state.selectedPath) {
+    const selected = Array.from(state.selectedPaths || []);
+    if (!selected.length) {
         return;
     }
-    if (isTrashView(root)) {
-        await deleteItem(state.db, state.selectedPath);
-    } else {
-        await moveItemToTrash(state.db, state.selectedPath);
+    const inTrash = state.currentPath === "/Trash";
+    // If both a folder and one of its descendants are selected, only act on the
+    // top-level folder — its move/delete handles the whole subtree.
+    const topLevel = selected.filter(
+        (path) => !selected.some((other) => other !== path && path.startsWith(`${other}/`))
+    );
+    for (const path of topLevel) {
+        if (inTrash) {
+            // eslint-disable-next-line no-await-in-loop
+            await deleteItem(state.db, path);
+        } else {
+            // eslint-disable-next-line no-await-in-loop
+            await moveItemToTrash(state.db, path);
+        }
     }
-    clearSelection(root);
+    state.selectedPaths.clear();
+    state.anchorPath = null;
+    state.selectedPath = null;
+    state.selectedItem = null;
     await renderFolder(root);
 }
 
@@ -795,11 +876,62 @@ function renderPreview(root, item) {
         state.previewUrl = null;
     }
 
+    const selectedPaths = state.selectedPaths || new Set();
+
+    if (selectedPaths.size === 0) {
+        if (previewTitle) {
+            previewTitle.textContent = "No Selection";
+            previewTitle.classList.remove("is-multi");
+        }
+        if (previewSubtitle) previewSubtitle.textContent = "Choose a file to preview";
+        if (previewInfo) previewInfo.textContent = "";
+        if (previewMedia) {
+            previewMedia.innerHTML = "";
+            previewMedia.classList.remove("is-multi");
+        }
+        return;
+    }
+
+    if (selectedPaths.size > 1) {
+        const totalBytes = state.items
+            .filter((i) => selectedPaths.has(i.path))
+            .reduce((sum, it) => sum + (it.type === "folder" ? 0 : (it.size || 0)), 0);
+        if (previewTitle) {
+            previewTitle.textContent = `${selectedPaths.size} items selected`;
+            previewTitle.classList.add("is-multi");
+        }
+        if (previewSubtitle) {
+            previewSubtitle.textContent = totalBytes
+                ? `${selectedPaths.size} items • Total ${formatSize(totalBytes)}`
+                : `${selectedPaths.size} items selected`;
+        }
+        if (previewInfo) {
+            previewInfo.textContent = "Hold Shift to extend selection. Press Delete (or Cmd+Backspace) to send to Trash.";
+        }
+        if (previewMedia) {
+            previewMedia.innerHTML = "";
+            previewMedia.classList.add("is-multi");
+            const count = document.createElement("div");
+            count.className = "finder-preview-folder";
+            count.textContent = `${selectedPaths.size} files`;
+            previewMedia.appendChild(count);
+        }
+        return;
+    }
+
+    if (previewTitle) previewTitle.classList.remove("is-multi");
+    if (previewMedia) previewMedia.classList.remove("is-multi");
+
+    // Single selection. Prefer the freshly-clicked item, falling back to the
+    // primary item derived from the selection set.
     if (!item) {
-        previewTitle.textContent = "No Selection";
-        previewSubtitle.textContent = "Choose a file to preview";
-        previewInfo.textContent = "";
-        previewMedia.innerHTML = "";
+        item = state.selectedItem;
+    }
+    if (!item) {
+        if (previewTitle) previewTitle.textContent = "No Selection";
+        if (previewSubtitle) previewSubtitle.textContent = "Choose a file to preview";
+        if (previewInfo) previewInfo.textContent = "";
+        if (previewMedia) previewMedia.innerHTML = "";
         return;
     }
 
@@ -938,11 +1070,23 @@ function renderRows(root, items) {
         empty.className = "finder-empty";
         empty.textContent = "This folder is empty";
         list.appendChild(empty);
+        if (root.finderState.selectedPaths && root.finderState.selectedPaths.size > 0) {
+            clearSelection(root);
+        }
         return;
     }
 
     const state = root.finderState;
-    let selectedItem = null;
+    if (!state.selectedPaths) {
+        state.selectedPaths = new Set();
+    }
+    // Prune any selected paths that are no longer in the current listing.
+    const validPaths = new Set(items.map((item) => item.path));
+    for (const path of Array.from(state.selectedPaths)) {
+        if (!validPaths.has(path)) {
+            state.selectedPaths.delete(path);
+        }
+    }
 
     items.forEach((item) => {
         const row = document.createElement("div");
@@ -975,8 +1119,16 @@ function renderRows(root, items) {
         row.appendChild(sizeCell);
         row.appendChild(kindCell);
 
-        row.addEventListener("click", () => {
-            setSelection(root, item);
+        row.addEventListener("click", (event) => {
+            let mode = "single";
+            let additive = false;
+            if (event.shiftKey) {
+                mode = "range";
+                additive = event.ctrlKey || event.metaKey;
+            } else if (event.ctrlKey || event.metaKey) {
+                mode = "toggle";
+            }
+            applyRowSelection(root, item, mode, additive);
         });
 
         row.addEventListener("dblclick", () => {
@@ -985,16 +1137,22 @@ function renderRows(root, items) {
             }
         });
 
-        if (state.selectedPath && state.selectedPath === item.path) {
+        if (state.selectedPaths.has(item.path)) {
             row.classList.add("selected");
-            selectedItem = item;
         }
 
         list.appendChild(row);
     });
 
-    state.selectedItem = selectedItem;
-    renderPreview(root, selectedItem);
+    // Pick the first selected row in listing order as the "primary" item so
+    // legacy single-item operations (rename, restore, preview, etc.) still work.
+    const ordered = items.filter((item) => state.selectedPaths.has(item.path));
+    state.selectedItem = ordered.length ? ordered[0] : null;
+    state.selectedPath = ordered.length ? ordered[0].path : null;
+    if (state.selectedPaths.size === 0) {
+        state.anchorPath = null;
+    }
+    renderPreview(root);
     updateContextMenuState(root);
 }
 
@@ -1307,16 +1465,21 @@ function bindContextMenu(root) {
         event.preventDefault();
         event.stopPropagation();
         newMenu.classList.remove("open");
-    const row = event.target.closest(".finder-row");
-    const state = root.finderState;
-    if (row && state.itemsByPath && state.itemsByPath.has(row.dataset.path)) {
-        setSelection(root, state.itemsByPath.get(row.dataset.path));
-    } else {
-        clearSelection(root);
-    }
-    updateContextMenuState(root);
-    showContextMenu(root, event.clientX, event.clientY);
-});
+        const row = event.target.closest(".finder-row");
+        const state = root.finderState;
+        if (row && state.itemsByPath && state.itemsByPath.has(row.dataset.path)) {
+            // Right-clicking an already-selected row keeps the multi-selection
+            // intact so context actions like "Delete" act on the whole set.
+            // Right-clicking an unselected row switches to that single row.
+            if (!state.selectedPaths || !state.selectedPaths.has(row.dataset.path)) {
+                setSelection(root, state.itemsByPath.get(row.dataset.path));
+            }
+        } else {
+            clearSelection(root);
+        }
+        updateContextMenuState(root);
+        showContextMenu(root, event.clientX, event.clientY);
+    });
 
     document.addEventListener("click", (event) => {
         if (!root.contains(event.target) || !event.target.closest(".finder-context-menu")) {
@@ -1415,10 +1578,22 @@ function bindKeyboard(root) {
         if (!state.hasFocus) {
             return;
         }
-        if (event.key === "Delete" || event.key === "Backspace") {
-            event.preventDefault();
-            await deleteSelection(root);
+        if (event.key !== "Delete" && event.key !== "Backspace") {
+            return;
         }
+        // Don't override text editing inside the search/rename inputs unless
+        // the user adds Cmd/Ctrl — that's the explicit "delete the file" cue.
+        const active = document.activeElement;
+        const inField = active && (
+            active.tagName === "INPUT" ||
+            active.tagName === "TEXTAREA" ||
+            active.isContentEditable
+        );
+        if (inField && !(event.metaKey || event.ctrlKey)) {
+            return;
+        }
+        event.preventDefault();
+        await deleteSelection(root);
     });
 }
 
@@ -1436,6 +1611,8 @@ async function initFinder(root) {
         previewUrl: null,
         selectedPath: null,
         selectedItem: null,
+        selectedPaths: new Set(),
+        anchorPath: null,
         items: [],
         itemsByPath: new Map(),
         hasFocus: false

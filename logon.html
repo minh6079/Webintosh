@@ -248,7 +248,17 @@
     </noscript>
     <script>
         let bg = document.getElementById("bg");
-        
+
+        // Prefer the last-selected wallpaper (matches the desktop).
+        try {
+            const saved = localStorage.getItem("wallpaper_now");
+            if (saved && /^[A-Za-z]+-(Day|Night)$/.test(saved)) {
+                document.body.style.backgroundImage = `url(./images/${saved}.jpg)`;
+            }
+        } catch (error) {
+            // localStorage unavailable — fall back to the default CSS background.
+        }
+
         function getURLParams() {
             const searchParams = window.location.search.substring(1).split('&');
             const params = {};

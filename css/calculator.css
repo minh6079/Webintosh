@@ -1,0 +1,71 @@
+/* Calculator App Wrapper
+ * Implements a small floating widget following the same window pattern
+ * used by other apps (#safari-window / #terminal-window / etc.), but
+ * condensed to 232px wide with an apple-black glassy frame.
+ *
+ * Visual model:
+ *   #calc-window       — flex column, dark apple-black + strong blur
+ *     #calc-topbar     — slim drag/close bar with unified macOS traffic
+ *                        lights (same #close/#minimize/#zoom used by other
+ *                        apps, fed by css/ui.css globally)
+ *     #main-calc       — iframe loading calculator.html
+ *
+ * Sized for desktop readability; not resizable.
+ */
+#calc-window.calc-app-wrapper {
+  width: 232px;
+  height: 452px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  /* Apple-black glass */
+  background-color: rgba(20, 20, 22, 0.78);
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
+
+  /* High-fidelity macOS Window Shadows */
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.70),
+    0 0 0 0.5px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.06);
+}
+
+/* Topbar — mirrors #safari-topbar styling from css/apps.css but tuned
+   for the 232px-wide widget. The global #win-tool (#close #minimize
+   #zoom traffic lights) come from css/ui.css. */
+#calc-topbar {
+  width: 100%;
+  height: 48px;
+  border-radius: 14px 14px 0 0;
+  background-color: rgba(248, 248, 249, 0.42);
+  backdrop-filter: blur(24px) saturate(1.15);
+  -webkit-backdrop-filter: blur(24px) saturate(1.15);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 16px;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+/* Global #win-tool is tuned for 1080+px windows with 20px margins.
+   Tighten the offsets so the dots land inside the 232px widget. */
+#calc-topbar #win-tool {
+  margin-top: 12px;
+  margin-left: 4px;
+}
+
+#main-calc {
+  width: 100%;
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  border-radius: 0 0 14px 14px;
+  border: none;
+  display: block;
+  background: transparent;
+}

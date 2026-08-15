@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      body {
+        background: transparent !important; /* Forces transparency inside framework */
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Inner calculator — visual sizing is owned by .calc-app-wrapper
+         (see css/calculator.css); this block only adds the inner padding. */
+      .calculator {
+        width: 100%;
+        height: 100%;
+        padding-bottom: 12px;
+        box-sizing: border-box;
+      }
+
+      /* Multi-line Display Layout */
+      .display-container {
+        width: 100%;
+        height: 90px;
+        padding: 0 16px 6px 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: flex-end;
+      }
+
+      .history-display {
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 13px;
+        font-weight: 400;
+        min-height: 16px;
+        margin-bottom: 2px;
+        letter-spacing: -0.2px;
+      }
+
+      .main-display {
+        color: #ffffff;
+        font-size: 48px;
+        font-weight: 200;
+        text-align: right;
+        overflow: hidden;
+        white-space: nowrap;
+        letter-spacing: -0.5px;
+        width: 100%;
+      }
+
+      /* Buttons Grid Area */
+      .buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        padding: 0 12px;
+      }
+
+      .btn-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 45px;
+      }
+
+      button {
+        border: none;
+        height: 45px;
+        width: 45px;
+        border-radius: 50%;
+        font-size: 19px;
+        font-weight: 400;
+        cursor: default;
+        outline: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.1s linear, color 0.1s linear;
+      }
+
+      /* Colors & Press Transitions */
+      .btn-top {
+        background-color: rgba(255, 255, 255, 0.28);
+        color: #ffffff;
+        font-size: 16px;
+      }
+
+      .btn-top:active,
+      .btn-top.keyboard-active {
+        background-color: rgba(255, 255, 255, 0.45);
+      }
+
+      .btn-num {
+        background-color: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
+        font-weight: 300;
+      }
+
+      .btn-num:active,
+      .btn-num.keyboard-active {
+        background-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .btn-op {
+        background-color: #ff9f0a;
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: 300;
+      }
+
+      .btn-op:active,
+      .btn-op.keyboard-active {
+        background-color: #fca92b;
+      }
+
+      .btn-op.active {
+        background-color: #ffffff;
+        color: #ff9f0a;
+        font-weight: 400;
+      }
+
+      /* Zero Key Span Fix */
+      .zero-wrapper {
+        grid-column: span 2;
+        justify-content: flex-start;
+      }
+
+      .zero-wrapper button {
+        width: 100px;
+        border-radius: 24px;
+        justify-content: flex-start;
+        padding-left: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="calculator">
+      <div class="display-container">
+        <div class="history-display" id="history-display"></div>
+        <div class="main-display" id="display">0</div>
+      </div>
+      <div class="buttons">
+        <div class="btn-wrapper">
+          <button class="btn-top" id="clear" data-key="Escape" onclick="clearDisplay()">AC</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-top" data-key="_sign" onclick="toggleSign()">+/-</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-top" data-key="%" onclick="percentage()">%</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-op" data-op="/" data-key="/" onclick="setOperator('/')">÷</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-num" data-key="7" onclick="appendNumber('7')">7</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-num" data-key="8" onclick="appendNumber('8')">8</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-num" data-key="9" onclick="appendNumber('9')">9</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-op" data-op="*" data-key="*" onclick="setOperator('*')">×</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-num" data-key="4" onclick="appendNumber('4')">4</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-num" data-key="5" onclick="appendNumber('5')">5</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-num" data-key="6" onclick="appendNumber('6')">6</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-op" data-op="-" data-key="-" onclick="setOperator('-')">−</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-num" data-key="1" onclick="appendNumber('1')">1</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-num" data-key="2" onclick="appendNumber('2')">2</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-num" data-key="3" onclick="appendNumber('3')">3</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-op" data-op="+" data-key="+" onclick="setOperator('+')">+</button>
+        </div>
+        <div class="btn-wrapper zero-wrapper">
+          <button class="btn-num" data-key="0" onclick="appendNumber('0')">0</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-num" data-key="." onclick="appendDecimal()">.</button>
+        </div>
+        <div class="btn-wrapper">
+          <button class="btn-op" data-key="Enter" onclick="calculate()">=</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const display = document.getElementById('display');
+      const historyDisplay = document.getElementById('history-display');
+      const clearBtn = document.getElementById('clear');
+      let displayValue = '0';
+      let firstOperand = null;
+      let waitingForSecondOperand = false;
+      let operator = null;
+
+      function formatNumberString(str) {
+        if (str === 'Error' || str === '-Error') return 'Error';
+        const parts = str.split('.');
+        let integerPart = parts[0];
+        const hasDecimal = str.includes('.');
+        let num = parseFloat(integerPart);
+        if (!isNaN(num)) {
+          integerPart = num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+          if (str.startsWith('-') && !integerPart.startsWith('-')) {
+            integerPart = '-' + integerPart;
+          }
+        }
+        return hasDecimal ? integerPart + '.' + (parts[1] || '') : integerPart;
+      }
+
+      function updateDisplay() {
+        const formatted = formatNumberString(displayValue);
+        display.textContent = formatted;
+        if (formatted.length > 11) {
+          display.style.fontSize = '20px';
+        } else if (formatted.length > 8) {
+          display.style.fontSize = '28px';
+        } else if (formatted.length > 6) {
+          display.style.fontSize = '36px';
+        } else {
+          display.style.fontSize = '48px';
+        }
+      }
+
+      function updateHistory(text) {
+        historyDisplay.textContent = text || '';
+      }
+
+      function appendNumber(number) {
+        if (waitingForSecondOperand) {
+          displayValue = number;
+          waitingForSecondOperand = false;
+        } else {
+          if (displayValue === '0') {
+            displayValue = number;
+          } else {
+            if (displayValue.replace(/[.-]/g, '').length < 9) {
+              displayValue += number;
+            }
+          }
+        }
+        clearBtn.textContent = 'C';
+        removeOpHighlights();
+        updateDisplay();
+      }
+
+      function appendDecimal() {
+        if (waitingForSecondOperand) {
+          displayValue = '0.';
+          waitingForSecondOperand = false;
+          updateDisplay();
+          return;
+        }
+        if (!displayValue.includes('.')) {
+          displayValue += '.';
+        }
+        clearBtn.textContent = 'C';
+        updateDisplay();
+      }
+
+      function clearDisplay() {
+        displayValue = '0';
+        firstOperand = null;
+        waitingForSecondOperand = false;
+        operator = null;
+        clearBtn.textContent = 'AC';
+        updateHistory('');
+        removeOpHighlights();
+        updateDisplay();
+      }
+
+      function toggleSign() {
+        if (displayValue === '0') return;
+        if (displayValue.startsWith('-')) {
+          displayValue = displayValue.slice(1);
+        } else {
+          displayValue = '-' + displayValue;
+        }
+        updateDisplay();
+      }
+
+      function percentage() {
+        const current = parseFloat(displayValue);
+        if (!isNaN(current)) {
+          displayValue = (current / 100).toString();
+          updateDisplay();
+        }
+      }
+
+      function setOperator(nextOperator) {
+        const inputValue = parseFloat(displayValue);
+        if (operator && waitingForSecondOperand) {
+          operator = nextOperator;
+          highlightOperator(nextOperator);
+          updateHistory(`${firstOperand} ${getOpSymbol(operator)}`);
+          return;
+        }
+        if (firstOperand === null && !isNaN(inputValue)) {
+          firstOperand = inputValue;
+        } else if (operator) {
+          const result = performCalculation(firstOperand, inputValue, operator);
+          displayValue = String(result);
+          firstOperand = result;
+          updateDisplay();
+        }
+        waitingForSecondOperand = true;
+        operator = nextOperator;
+        highlightOperator(nextOperator);
+        updateHistory(`${firstOperand} ${getOpSymbol(operator)}`);
+      }
+
+      function getOpSymbol(op) {
+        if (op === '/') return '÷';
+        if (op === '*') return '×';
+        return op;
+      }
+
+      function performCalculation(first, second, op) {
+        if (op === '+') return first + second;
+        if (op === '-') return first - second;
+        if (op === '*') return first * second;
+        if (op === '/') return second === 0 ? 'Error' : first / second;
+        return second;
+      }
+
+      function calculate() {
+        if (operator === null || waitingForSecondOperand) return;
+        const inputValue = parseFloat(displayValue);
+        const result = performCalculation(firstOperand, inputValue, operator);
+        updateHistory('');
+        displayValue = String(result);
+        firstOperand = null;
+        operator = null;
+        waitingForSecondOperand = false;
+        removeOpHighlights();
+        updateDisplay();
+      }
+
+      function highlightOperator(op) {
+        removeOpHighlights();
+        const btn = document.querySelector(`[data-op="${op}"]`);
+        if (btn) btn.classList.add('active');
+      }
+
+      function removeOpHighlights() {
+        document.querySelectorAll('.btn-op').forEach(btn => btn.classList.remove('active'));
+      }
+
+      // --- KEYBOARD LISTENER ---
+      window.addEventListener('keydown', (e) => {
+        let key = e.key;
+        if (key === '=') key = 'Enter';
+        
+        let selector = `[data-key="${key}"]`;
+        if (key === 'Escape' && clearBtn.textContent === 'C') selector = '#clear';
+        
+        const targetButton = document.querySelector(selector);
+        if (targetButton) {
+          targetButton.classList.add('keyboard-active');
+          targetButton.click();
+        }
+
+        if (key === 'Backspace') {
+          if (!waitingForSecondOperand && displayValue !== '0') {
+            if (displayValue.length > 1) {
+              displayValue = displayValue.slice(0, -1);
+              if (displayValue === '-' || displayValue === '-0') displayValue = '0';
+            } else {
+              displayValue = '0';
+              clearBtn.textContent = 'AC';
+            }
+            updateDisplay();
+          }
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        document.querySelectorAll('.keyboard-active').forEach(btn => btn.classList.remove('keyboard-active'));
+      });
+    </script>
+  </body>
+</html>
