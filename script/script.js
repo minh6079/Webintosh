@@ -108,6 +108,7 @@ function makeDraggable(element) {
 }
 
 function topbarText(text1, text2, text3, text4, text5, text6, text7, text8, text9, text10) {
+    window.currentTopbarApp = text1;
     menu1.innerHTML = text1;
     menu2.innerHTML = text2;
     menu3.innerHTML = text3;
@@ -119,6 +120,182 @@ function topbarText(text1, text2, text3, text4, text5, text6, text7, text8, text
     menu9.innerHTML = text9;
     menu10.innerHTML = text10;
 }
+
+const TOPBAR_MENU_ITEMS = {
+    Finder: {
+        app: ["About Finder", "Settings...", "Empty Trash...", "Services", "Hide Finder", "Hide Others", "Show All"],
+        file: ["New Finder Window", "New Folder", "New Smart Folder", "New Tab", "Close Window", "Get Info", "Rename", "Duplicate", "Make Alias", "Move to Trash", "Eject"],
+        edit: ["Undo", "Redo", "Cut", "Copy", "Paste", "Select All", "Show Clipboard"],
+        view: ["as Icons", "as List", "as Columns", "as Gallery", "Use Groups", "Sort By", "Clean Up", "Show Path Bar", "Show Status Bar", "Show Sidebar", "Show Preview", "Show Tab Bar", "Customize Toolbar..."],
+        go: ["Back", "Forward", "Enclosing Folder", "Recents", "Documents", "Desktop", "Downloads", "Home", "Computer", "Network", "AirDrop", "Applications", "Utilities", "Go to Folder...", "Connect to Server..."],
+        window: ["Minimize", "Zoom", "Move Window to Left Side of Screen", "Move Window to Right Side of Screen", "Bring All to Front"],
+        help: ["macOS Help", "Finder Help"]
+    },
+    Safari: {
+        app: ["About Safari", "Settings...", "Privacy Report...", "Services", "Hide Safari", "Hide Others", "Show All", "Quit Safari"],
+        file: ["New Window", "New Private Window", "New Tab", "Open Location...", "Open File...", "Close Window", "Close All Windows", "Close Tab", "Save As...", "Share", "Print..."],
+        edit: ["Undo", "Redo", "Cut", "Copy", "Paste", "Select All", "AutoFill", "Find", "Spelling and Grammar", "Substitutions", "Start Dictation"],
+        view: ["Show Title Bar", "Show Tab Bar", "Show Favorites Bar", "Show Sidebar", "Hide Sidebar", "Show All Tabs", "Zoom In", "Zoom Out", "Stop", "Reload Page", "Customize Toolbar...", "Hide Status Bar", "Enter Full Screen"],
+        history: ["Back", "Forward", "Home", "History Highlights", "Recently Closed", "Reopen Last Closed Window", "Reopen Last Closed Tab", "Show All History", "Clear History..."],
+        bookmarks: ["Add Bookmark...", "Add Bookmarks for These Tabs...", "Add to Favorites", "Bookmarks Folder", "Edit Bookmarks", "Show Bookmarks"],
+        window: ["Minimize", "Zoom", "Move Window to Left Side of Screen", "Move Window to Right Side of Screen", "Bring All to Front"],
+        help: ["Safari Help", "Privacy Report..."]
+    },
+    Settings: {
+        app: ["About System Settings", "Settings...", "Services", "Hide System Settings", "Hide Others", "Show All", "Quit System Settings"],
+        file: ["Close", "Close Window"],
+        edit: ["Undo", "Redo", "Cut", "Copy", "Paste", "Select All"],
+        view: ["All Settings", "Show Previous", "Show Next", "Zoom In", "Zoom Out"],
+        window: ["Minimize", "Zoom", "Bring All to Front"],
+        help: ["System Settings Help"]
+    },
+    Freeform: {
+        app: ["About Freeform", "Settings...", "Services", "Hide Freeform", "Hide Others", "Show All", "Quit Freeform"],
+        file: ["New Board", "New Board from Template", "Open...", "Open Recent", "Close", "Duplicate", "Rename...", "Export", "Export as PDF...", "Share"],
+        edit: ["Undo", "Redo", "Cut", "Copy", "Paste", "Paste and Match Style", "Delete", "Select All", "Duplicate"],
+        insert: ["Text", "Shape", "Sticky Note", "Media", "Scan"],
+        view: ["Zoom In", "Zoom Out", "Actual Size", "Zoom to Fit", "Show Grid", "Hide Alignment Guides", "Enter Full Screen"],
+        window: ["Minimize", "Zoom", "Bring All to Front"],
+        help: ["Freeform Help"]
+    },
+    Notes: {
+        app: ["About Notes", "Settings...", "Services", "Hide Notes", "Hide Others", "Show All", "Quit Notes"],
+        file: ["New Note", "New Quick Note", "New Folder", "Close", "Import to Notes...", "Export as PDF..."],
+        edit: ["Undo", "Redo", "Cut", "Copy", "Paste", "Paste and Match Style", "Delete", "Select All", "Attach Files...", "Insert Photo..."],
+        format: ["Font", "Text", "Checklist", "Table"],
+        view: ["as List", "as Gallery", "Sort Notes By", "Show Folders", "Hide Sidebar", "Show Attachments Browser", "Enter Full Screen"],
+        window: ["Minimize", "Zoom", "Bring All to Front"],
+        help: ["Notes Help"]
+    },
+    Maps: {
+        app: ["About Maps", "Settings...", "Services", "Hide Maps", "Hide Others", "Show All", "Quit Maps"],
+        file: ["New Window", "New Tab", "Close Window", "Save to Guides...", "Print..."],
+        edit: ["Undo", "Redo", "Cut", "Copy", "Paste", "Select All", "Find"],
+        view: ["Explore", "Driving", "Transit", "Satellite", "Show Traffic", "Show Labels", "Show Compass", "2D Map", "3D Map", "Zoom In", "Zoom Out", "Enter Full Screen"],
+        window: ["Minimize", "Zoom", "Bring All to Front"],
+        help: ["Maps Help"]
+    },
+    Terminal: {
+        app: ["About Terminal", "Settings...", "Secure Keyboard Entry", "Services", "Hide Terminal", "Hide Others", "Show All", "Quit Terminal"],
+        shell: ["New Window", "New Tab", "New Command...", "Connect to Server...", "Close Window", "Close Tab", "Export Text As...", "Print..."],
+        edit: ["Undo", "Redo", "Cut", "Copy", "Paste", "Paste Escaped Text", "Select All", "Find", "Use Selection for Find", "Clear Scrollback"],
+        view: ["Show Tab Bar", "Show Inspector", "Show Font Panel", "Bigger Text", "Smaller Text", "Zoom In", "Zoom Out", "Enter Full Screen"],
+        window: ["Minimize", "Zoom", "Bring All to Front"],
+        help: ["Terminal Help"]
+    },
+    Calculator: {
+        app: ["About Calculator", "Settings...", "Services", "Hide Calculator", "Hide Others", "Show All", "Quit Calculator"],
+        file: ["Close Window"],
+        edit: ["Undo", "Redo", "Cut", "Copy", "Paste", "Select All", "Show Paper Tape"],
+        view: ["Basic", "Scientific", "Programmer", "Convert", "Show Paper Tape", "Show Thousands Separator", "RPN Mode"],
+        convert: ["Area", "Currency", "Energy", "Length", "Power", "Pressure", "Speed", "Temperature", "Time", "Volume", "Weights and Masses"],
+        window: ["Minimize", "Zoom", "Bring All to Front"],
+        help: ["Calculator Help"]
+    }
+};
+
+let activeTopbarMenu = null;
+
+function closeAppleMenu() {
+    if (typeof apple_menu !== "undefined" && apple_menu) {
+        apple_menu.style.animation = "none";
+        apple_menu.style.opacity = 0;
+        apple_menu.style.zIndex = -0.5;
+        apple_menu.classList.remove("open");
+    }
+    if (typeof h4div !== "undefined" && h4div) {
+        h4div.style.animation = "none";
+        h4div.style.opacity = 0;
+    }
+    if (typeof appleFrame !== "undefined" && appleFrame) {
+        appleFrame.style.backgroundColor = "rgba(255, 255, 255, 0)";
+    }
+    if (typeof menu !== "undefined") {
+        menu = false;
+    }
+}
+
+function getTopbarDropdownLabel(menuKey) {
+    const labels = {
+        app: "Finder",
+        file: "File",
+        edit: "Edit",
+        view: "View",
+        go: "Go",
+        window: "Window",
+        help: "Help"
+    };
+    return labels[menuKey] || "";
+}
+
+function closeTopbarDropdown() {
+    const dropdown = document.getElementById("topbar-dropdown");
+    const menuItems = document.querySelectorAll("#topbar #menu h4");
+    if (dropdown) {
+        dropdown.classList.remove("open");
+        dropdown.innerHTML = "";
+        dropdown.setAttribute("aria-hidden", "true");
+    }
+    menuItems.forEach((item) => item.classList.remove("topbar-menu-active"));
+    activeTopbarMenu = null;
+}
+
+function openTopbarDropdown(menuEl) {
+    const dropdown = document.getElementById("topbar-dropdown");
+    if (!dropdown || !menuEl) {
+        return;
+    }
+    closeAppleMenu();
+    const menuKey = menuEl.dataset.menu;
+    const appName = window.currentTopbarApp || "Finder";
+    const appMenus = TOPBAR_MENU_ITEMS[appName] || TOPBAR_MENU_ITEMS.Finder;
+    const items = menuKey === "app" ? null : appMenus[menuKey];
+    if (!items || !items.length) {
+        closeTopbarDropdown();
+        return;
+    }
+
+    const rect = menuEl.getBoundingClientRect();
+    dropdown.innerHTML = items.map((item) => `<button type="button" class="topbar-dropdown-item">${item}</button>`).join("");
+    dropdown.style.left = `${Math.max(8, rect.left)}px`;
+    dropdown.style.top = `${rect.bottom + 6}px`;
+    dropdown.classList.add("open");
+    dropdown.setAttribute("aria-hidden", "false");
+    document.querySelectorAll("#topbar #menu h4").forEach((item) => {
+        item.classList.toggle("topbar-menu-active", item === menuEl);
+    });
+    activeTopbarMenu = menuEl;
+}
+
+function toggleTopbarDropdown(menuEl) {
+    if (!menuEl || !menuEl.dataset.menu) {
+        return;
+    }
+    if (activeTopbarMenu === menuEl) {
+        closeTopbarDropdown();
+        return;
+    }
+    openTopbarDropdown(menuEl);
+}
+
+document.addEventListener("click", (event) => {
+    const menuItem = event.target.closest("#topbar #menu h4[data-menu]");
+    const dropdown = event.target.closest("#topbar-dropdown");
+    if (menuItem) {
+        event.stopPropagation();
+        toggleTopbarDropdown(menuItem);
+        return;
+    }
+    if (!dropdown) {
+        closeTopbarDropdown();
+    }
+});
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        closeTopbarDropdown();
+    }
+});
 
 function makeDraggableHardWare(element) {
     let isDragging = false;
@@ -320,11 +497,10 @@ function updateTime() {
     let dayOfWeek = now.getDay();
     let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     let dayName = days[dayOfWeek];
-    const options = { month: 'numeric', day: 'numeric' };
-    const date = now.toLocaleDateString('en-US', options);
+    const date = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     document.getElementById('Time').textContent = timeString;
     document.getElementById('Zhou').textContent = dayName;
-    document.getElementById('Date').textContent = date.replace(/\//g, ' of ') + ',';
+    document.getElementById('Date').textContent = date;
 }
 
 function Sleep() {
@@ -339,6 +515,8 @@ function Sleep() {
 
 function Show_AppleMenu() {
     if (menu == false) {
+        closeTopbarDropdown();
+        apple_menu.classList.add("open");
         apple_menu.style.opacity = 1
         apple_menu.style.zIndex = 2
         h4div.style.opacity = 1
@@ -361,17 +539,7 @@ function Show_AppleMenu() {
             }
         });
     } else {
-        apple_menu.style.animation = `opacityBack 0.125s ease-in-out`;
-        h4div.style.animation = `opacityBack 0.125s ease-in-out`;
-        appleFrame.style.backgroundColor = `rgba(255, 255, 255, 0)`
-        setTimeout(function () {
-            apple_menu.style.zIndex = -0.5;
-            apple_menu.style.opacity = 0;
-            h4div.style.opacity = 0;
-            h4div.style.animation = `none`;
-            apple_menu.style.animation = `none`;
-            menu = false;
-        }, 125)
+        closeAppleMenu();
     }
 }
 
@@ -604,7 +772,7 @@ function updateTopbarForWindow(win) {
         return;
     }
     if (win.id == 'settings') {
-        topbarText("System Preferences", "File", "Edit", "View", "Window", "Help", "", "", "", "");
+        topbarText("Settings", "File", "Edit", "View", "Window", "Help", "", "", "", "");
     } else if (win.id == 'safari-window') {
         topbarText("Safari", "File", "Edit", "View", "History", "Bookmarks", "Window", "Help", "", "");
     } else if (win.id == 'freeform-window') {

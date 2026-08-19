@@ -601,6 +601,8 @@
    suite), instead of dead-centering like other apps. */
 #calc-window {
     position: absolute;
-    top: 80px;
-    right: 24px;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
 }

@@ -19,7 +19,9 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  position: relative;
+  position: absolute;
+  top: 50px;
+  left: 50px;
 
   /* Apple-black glass */
   background-color: rgba(20, 20, 22, 0.78);
@@ -40,9 +42,9 @@
   width: 100%;
   height: 48px;
   border-radius: 14px 14px 0 0;
-  background-color: rgba(248, 248, 249, 0.42);
-  backdrop-filter: blur(24px) saturate(1.15);
-  -webkit-backdrop-filter: blur(24px) saturate(1.15);
+  background-color: rgba(20, 20, 22, 0.58);
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -50,6 +52,7 @@
   position: relative;
   z-index: 2;
   flex-shrink: 0;
+  box-shadow: inset 0 -0.5px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* Global #win-tool is tuned for 1080+px windows with 20px margins.

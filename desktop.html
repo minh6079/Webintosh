@@ -82,7 +82,7 @@
                 <img src="./dock/Terminal.png" alt="Terminal" onclick="OpenApp(this, maxZIndex)" />
                 <img src="./images/AppIcon 105.png" alt="Calculator" onclick="OpenApp(this, maxZIndex)" />
                 <img src="./dock/App Store.png" alt="App Store" onclick="OpenApp(this, maxZIndex)" />
-                <img src="./dock/System Preferences.png" alt="System Preferences" onclick="OpenApp(this, maxZIndex)" />
+                <img src="./dock/System Preferences.png" alt="Settings" onclick="OpenApp(this, maxZIndex)" />
                 <hr>
                 <img src="./dock/downloads.png" alt="Downloads" onclick="OpenApp(this, maxZIndex)" width="64"
                     height="64" />
@@ -93,20 +93,20 @@
 
     <header id="topbar"> <!-- Finder Bar -->
         <section id="menu">
-            <div style="font-size: 22px; margin-left: 5px; padding-left: 7.5px; padding-right: 7.5px; border-radius: 5px;"
+            <div style="font-size: 17.6px; margin-left: 5px; padding-left: 7.5px; padding-right: 7.5px; border-radius: 5px;"
                 onclick="Show_AppleMenu()" id="apple-frame">
                 <h4></h4>
             </div>
-            <h4 style="margin-left: 2%;" id="menu1">Finder</h4>
-            <h4 style="margin-left: 2%;" id="menu2" onclick="OpenMenu(this)">File</h4>
-            <h4 style="margin-left: 2%;" id="menu3" onclick="OpenMenu(this)">Edit</h4>
-            <h4 style="margin-left: 2%;" id="menu4" onclick="OpenMenu(this)">View</h4>
-            <h4 style="margin-left: 2%;" id="menu5" onclick="OpenMenu(this)">Go</h4>
-            <h4 style="margin-left: 2%;" id="menu6" onclick="OpenMenu(this)">Window</h4>
-            <h4 style="margin-left: 2%;" id="menu7" onclick="OpenMenu(this)">Help</h4>
-            <h4 style="margin-left: 2%;" id="menu8" onclick="OpenMenu(this)"></h4>
-            <h4 style="margin-left: 2%;" id="menu9" onclick="OpenMenu(this)"></h4>
-            <h4 style="margin-left: 2%;" id="menuX" onclick="OpenMenu(this)"></h4>
+            <h4 style="margin-left: 2%;" id="menu1" data-menu="app">Finder</h4>
+            <h4 style="margin-left: 2%;" id="menu2" data-menu="file">File</h4>
+            <h4 style="margin-left: 2%;" id="menu3" data-menu="edit">Edit</h4>
+            <h4 style="margin-left: 2%;" id="menu4" data-menu="view">View</h4>
+            <h4 style="margin-left: 2%;" id="menu5" data-menu="go">Go</h4>
+            <h4 style="margin-left: 2%;" id="menu6" data-menu="window">Window</h4>
+            <h4 style="margin-left: 2%;" id="menu7" data-menu="help">Help</h4>
+            <h4 style="margin-left: 2%;" id="menu8" data-menu="extra1"></h4>
+            <h4 style="margin-left: 2%;" id="menu9" data-menu="extra2"></h4>
+            <h4 style="margin-left: 2%;" id="menuX" data-menu="extra3"></h4>
         </section>
         <section id="status">
             <h4 style="margin-right: 2%;" id="Time" onclick="OpenMenu(this)">00:00</h4>
@@ -115,14 +115,16 @@
         </section>
     </header>
 
-    <div id="apple-menu"> <!-- Apple Menu -->
+    <div id="topbar-dropdown" aria-hidden="true"></div>
+
+    <div id="apple-menu" class="topbar-dropdown-surface"> <!-- Apple Menu -->
         <div class="h4-div" id="app-menu h4-div">
             <div id="control">
                 <h4 onclick="AboutHardWare(maxZIndex)" style="margin: 0;"> About This Mac</h4>
             </div>
             <hr id="menu-hr">
             <div id="control">
-                <h4 onclick="OpenMenu(this)" style="margin: 0; margin-top: 4px;"> System Preferences...</h4>
+                <h4 onclick="OpenMenu(this)" style="margin: 0; margin-top: 4px;"> Settings...</h4>
             </div>
             <div id="control">
                 <h4 onclick="OpenMenu(this)" style="margin: 0; margin-top: 4px;"> App Store</h4>

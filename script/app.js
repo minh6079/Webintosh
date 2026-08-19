@@ -143,7 +143,7 @@ function OpenApp(img, index) {
             lp_status = false;
         }
         topbarText("Safari", "File", "Edit", "View", "History", "Bookmarks", "Window", "Help", "", "");
-    } else if (altText == "System Preferences") {
+    } else if (altText == "Settings") {
         if (lp_status == false) {
             if (setting_state != true) {
                 window.setting_div = document.createElement("div");
@@ -388,12 +388,18 @@ function OpenApp(img, index) {
             window.calculator_div.classList.add("window", "calc-app-wrapper");
             window.calculator_div.innerHTML = calculator_code;
             window.calculator_div.style.zIndex = nextIndex;
+            window.calculator_div.style.left = `50px`;
+            window.calculator_div.style.top = `50px`;
+            window.calculator_div.style.transform = `none`;
             desktop.appendChild(window.calculator_div);
             makeDraggable(window.calculator_div);
             calculator_state = true;
             selectWindowInit();
         } else {
             window.calculator_div.style.zIndex = nextIndex * 2;
+            window.calculator_div.style.left = `50px`;
+            window.calculator_div.style.top = `50px`;
+            window.calculator_div.style.transform = `none`;
         }
         topbarText("Calculator", "File", "Edit", "View", "Window", "Help", "", "", "", "");
      }
