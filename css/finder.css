@@ -336,6 +336,16 @@
     background: linear-gradient(180deg, #f0f2f8, #dce1ec);
 }
 
+.finder-row-icon.app {
+    background: transparent;
+    border: none;
+    width: 22px;
+    height: 22px;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 .finder-preview {
     display: flex;
     flex-direction: column;

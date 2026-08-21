@@ -249,7 +249,7 @@ function openTopbarDropdown(menuEl) {
     const menuKey = menuEl.dataset.menu;
     const appName = window.currentTopbarApp || "Finder";
     const appMenus = TOPBAR_MENU_ITEMS[appName] || TOPBAR_MENU_ITEMS.Finder;
-    const items = menuKey === "app" ? null : appMenus[menuKey];
+    const items = appMenus[menuKey];
     if (!items || !items.length) {
         closeTopbarDropdown();
         return;

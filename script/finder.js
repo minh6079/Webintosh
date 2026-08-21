@@ -1,5 +1,10 @@
-const FINDER_DB_NAME = "webintosh-finder";
+// Use shared FS database (webintosh-fs) - same DB as Terminal
+const FINDER_DB_NAME = "webintosh-fs";
 const FINDER_DB_VERSION = 1;
+
+function withStore(db, mode = "readonly") {
+    return db.transaction("items", mode).objectStore("items");
+}
 
 function openFinderDb() {
     return new Promise((resolve, reject) => {
@@ -11,99 +16,20 @@ function openFinderDb() {
                 store.createIndex("parentPath", "parentPath", { unique: false });
                 store.createIndex("modifiedAt", "modifiedAt", { unique: false });
                 store.createIndex("name", "name", { unique: false });
+                store.createIndex("type", "type", { unique: false });
             }
         };
-        request.onsuccess = function () {
-            resolve(request.result);
-        };
-        request.onerror = function () {
-            reject(request.error);
-        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
     });
-}
-
-function withStore(db, mode) {
-    return db.transaction("items", mode).objectStore("items");
 }
 
 function seedFinderIfNeeded(db) {
-    return new Promise((resolve, reject) => {
-        const store = withStore(db, "readonly");
-        const countRequest = store.count();
-        countRequest.onsuccess = function () {
-            if (countRequest.result > 0) {
-                resolve();
-                return;
-            }
-            const tx = db.transaction("items", "readwrite");
-            const writeStore = tx.objectStore("items");
-            const now = Date.now();
-            const rootItems = [
-                { path: "/Applications", parentPath: "/", name: "Applications", type: "folder" },
-                { path: "/Desktop", parentPath: "/", name: "Desktop", type: "folder" },
-                { path: "/Documents", parentPath: "/", name: "Documents", type: "folder" },
-                { path: "/Downloads", parentPath: "/", name: "Downloads", type: "folder" },
-                { path: "/Notes", parentPath: "/", name: "Notes", type: "folder" },
-                { path: "/Trash", parentPath: "/", name: "Trash", type: "folder" },
-                { path: "/Pictures", parentPath: "/", name: "Pictures", type: "folder" }
-            ];
-
-            const sampleItems = [
-                {
-                    path: "/Pictures/Sequoia Day.jpg",
-                    parentPath: "/Pictures",
-                    name: "Sequoia Day.jpg",
-                    type: "file",
-                    mime: "image/jpeg",
-                    kind: "JPEG image",
-                    size: 3900000,
-                    modifiedAt: now - 1000 * 60 * 60 * 24 * 3,
-                    createdAt: now - 1000 * 60 * 60 * 24 * 3,
-                    previewUrl: "./images/Sequoia-Day.jpg"
-                },
-                {
-                    path: "/Pictures/Sequoia Night.jpg",
-                    parentPath: "/Pictures",
-                    name: "Sequoia Night.jpg",
-                    type: "file",
-                    mime: "image/jpeg",
-                    kind: "JPEG image",
-                    size: 3200000,
-                    modifiedAt: now - 1000 * 60 * 60 * 24 * 7,
-                    createdAt: now - 1000 * 60 * 60 * 24 * 7,
-                    previewUrl: "./images/Sequoia-Night.jpg"
-                },
-                {
-                    path: "/Pictures/Wallpapers",
-                    parentPath: "/Pictures",
-                    name: "Wallpapers",
-                    type: "folder",
-                    modifiedAt: now - 1000 * 60 * 60 * 24 * 15,
-                    createdAt: now - 1000 * 60 * 60 * 24 * 15
-                }
-            ];
-
-            rootItems.forEach((item) => {
-                writeStore.add({
-                    ...item,
-                    kind: "Folder",
-                    size: 0,
-                    createdAt: now,
-                    modifiedAt: now
-                });
-            });
-            sampleItems.forEach((item) => writeStore.add(item));
-            tx.oncomplete = function () {
-                resolve();
-            };
-            tx.onerror = function () {
-                reject(tx.error);
-            };
-        };
-        countRequest.onerror = function () {
-            reject(countRequest.error);
-        };
-    });
+    // Use window.FS seed if available, otherwise no-op (fs.js handles seeding)
+    if (window.FS && window.FS.seedIfNeeded) {
+        return window.FS.seedIfNeeded(db);
+    }
+    return Promise.resolve();
 }
 
 function formatSize(bytes) {
@@ -1096,7 +1022,12 @@ function renderRows(root, items) {
         const nameCell = document.createElement("div");
         nameCell.className = "finder-cell name";
         const icon = document.createElement("span");
-        icon.className = `finder-row-icon ${item.type === "folder" ? "folder" : "file"}`;
+        if (item.appId && item.icon) {
+            icon.className = "finder-row-icon app";
+            icon.style.backgroundImage = `url("${item.icon}")`;
+        } else {
+            icon.className = `finder-row-icon ${item.type === "folder" ? "folder" : "file"}`;
+        }
         nameCell.appendChild(icon);
         const nameText = document.createElement("span");
         nameText.textContent = item.name;
@@ -1134,6 +1065,11 @@ function renderRows(root, items) {
         row.addEventListener("dblclick", () => {
             if (item.type === "folder") {
                 navigateTo(root, item.path);
+                return;
+            }
+            if (item.type === "file" && item.appId && typeof OpenApp === "function") {
+                const fakeImg = { alt: item.appId };
+                OpenApp(fakeImg, getNextWindowZIndex ? getNextWindowZIndex() : 100);
             }
         });
 
