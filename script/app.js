@@ -352,6 +352,15 @@ function OpenApp(img, index) {
                 desktop.appendChild(window.terminal_div);
                 makeDraggable(window.terminal_div);
                 makeResizable(window.terminal_div);
+                // Add focus handler to topbar since iframe captures clicks
+                const topbar = window.terminal_div.querySelector('#terminal-topbar');
+                if (topbar) {
+                    topbar.addEventListener('pointerdown', (e) => {
+                        if (e.button !== undefined && e.button !== 0) return;
+                        bringWindowToFront(window.terminal_div);
+                        updateTopbarForWindow(window.terminal_div);
+                    });
+                }
                 terminal_state = true;
                 selectWindowInit();
             } else {
@@ -373,6 +382,15 @@ function OpenApp(img, index) {
                 desktop.appendChild(window.terminal_div);
                 makeDraggable(window.terminal_div);
                 makeResizable(window.terminal_div);
+                // Add focus handler to topbar since iframe captures clicks
+                const topbar = window.terminal_div.querySelector('#terminal-topbar');
+                if (topbar) {
+                    topbar.addEventListener('pointerdown', (e) => {
+                        if (e.button !== undefined && e.button !== 0) return;
+                        bringWindowToFront(window.terminal_div);
+                        updateTopbarForWindow(window.terminal_div);
+                    });
+                }
                 terminal_state = true;
                 selectWindowInit();
             } else {

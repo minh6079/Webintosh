@@ -215,8 +215,7 @@ let terminal_code = `<div id="terminal-topbar">
     </div>
     <div id="page-tool"></div>
 </div>
-<iframe id="main-terminal" src="./terminal.html">
-</iframe>`;
+<iframe id="main-terminal" src="./terminal.html"></iframe>`;
 
 let notes_code = `<div id="note-topbar">
     <div id="win-tool">

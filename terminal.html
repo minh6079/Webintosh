@@ -33,7 +33,7 @@
 
       // Essential dotfiles for the shell (fallback if shared FS unavailable)
       const essentialFiles = {
-        '/home/user/.bashrc': `# ~/.bashrc
+        '/.bashrc': `# ~/.bashrc
 export PATH="$HOME/.local/bin:$PATH"
 export EDITOR=vim
 export HISTSIZE=10000
@@ -47,7 +47,7 @@ alias dc="docker compose"
 # nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"`,
-        '/home/user/.gitconfig': `[user]
+        '/.gitconfig': `[user]
   name = Webintosh User
   email = user@webintosh.local
 [core]
@@ -62,14 +62,14 @@ export NVM_DIR="$HOME/.nvm"
   rebase = true
 [push]
   default = current`,
-        '/home/user/.ssh/config': `Host github.com
+        '/.ssh/config': `Host github.com
   HostName github.com
   User git
   IdentityFile ~/.ssh/id_ed25519`
       };
 
       // Wait for parent window to be ready with shared FS (with timeout)
-      async function waitForParentFS(timeout = 5000) {
+      async function waitForParentFS(timeout = 8000) {
         return new Promise((resolve) => {
           const startTime = Date.now();
           const check = () => {
@@ -83,7 +83,7 @@ export NVM_DIR="$HOME/.nvm"
               console.warn('[Terminal] Cannot access parent window:', e.message);
             }
             if (Date.now() - startTime > timeout) {
-              console.warn('[Terminal] Timeout waiting for parent FS, using fallback');
+              console.warn('[Terminal] Timeout waiting for parent FS');
               resolve(null);
               return;
             }
@@ -93,7 +93,7 @@ export NVM_DIR="$HOME/.nvm"
         });
       }
 
-      // Load files from shared FS and map to shell paths
+      // Load files from shared FS using the FS module's helper
       async function loadSharedFiles(fs) {
         if (!fs) {
           console.log('[Terminal] No shared FS, using essential files only');
@@ -102,24 +102,81 @@ export NVM_DIR="$HOME/.nvm"
         try {
           const db = await fs.openDb();
           await fs.seedIfNeeded(db);
-          const items = await fs.listAll(db);
-          const files = { ...essentialFiles };
-
-          for (const item of items) {
-            if (item.type === 'file' && item.content !== undefined) {
-              let shellPath = item.path;
-              if (shellPath.startsWith('/')) {
-                shellPath = '/home/user' + shellPath;
-              }
-              files[shellPath] = item.content;
-            }
-          }
-          console.log('[Terminal] Loaded', Object.keys(files).length, 'files from shared FS');
-          return files;
+          const files = await fs.getFilesForTerminal(db);
+          const merged = { ...essentialFiles, ...files };
+          console.log('[Terminal] Loaded', Object.keys(merged).length, 'files from shared FS (root=/)');
+          return merged;
         } catch (e) {
           console.error('[Terminal] Failed to load shared FS:', e);
           return essentialFiles;
         }
+      }
+
+      // Fallback: Direct IndexedDB access if parent FS unavailable
+      async function loadSharedFilesDirect() {
+        return new Promise((resolve) => {
+          try {
+            const request = indexedDB.open('webintosh-fs', 1);
+            request.onsuccess = async () => {
+              const db = request.result;
+              // Use the same logic as getFilesForTerminal (includes folders via .keep files)
+              const tx = db.transaction('items', 'readonly');
+              const store = tx.objectStore('items');
+              const getAllReq = store.getAll();
+              getAllReq.onsuccess = async () => {
+                const items = getAllReq.result || [];
+                const files = { ...essentialFiles };
+                const folders = new Set(['/']);
+
+                // First pass: collect all folders
+                for (const item of items) {
+                  if (item.type === 'folder') {
+                    folders.add(item.path);
+                  } else if (item.type === 'file') {
+                    const parts = item.path.split('/').filter(Boolean);
+                    for (let i = 1; i <= parts.length; i++) {
+                      folders.add('/' + parts.slice(0, i).join('/'));
+                    }
+                  }
+                }
+
+                // Add .keep files for all folders
+                for (const folder of folders) {
+                  const keepPath = folder === '/' ? '/.keep' : folder + '/.keep';
+                  files[keepPath] = '';
+                }
+
+                // Second pass: add actual file contents
+                for (const item of items) {
+                  if (item.type === 'file') {
+                    if (item.content !== undefined && typeof item.content === 'string') {
+                      files[item.path] = item.content;
+                    } else if (item.data && typeof item.data.text === 'function') {
+                      try {
+                        files[item.path] = await item.data.text();
+                      } catch (e) {
+                        console.warn('[Terminal] Failed to read file content:', item.path, e);
+                      }
+                    }
+                  }
+                }
+                console.log('[Terminal] Loaded', Object.keys(files).length, 'entries from direct IndexedDB (root=/)');
+                resolve(files);
+              };
+              getAllReq.onerror = () => {
+                console.error('[Terminal] Direct IndexedDB failed:', getAllReq.error);
+                resolve(essentialFiles);
+              };
+            };
+            request.onerror = () => {
+              console.error('[Terminal] Cannot open IndexedDB:', request.error);
+              resolve(essentialFiles);
+            };
+          } catch (e) {
+            console.error('[Terminal] Direct IndexedDB error:', e);
+            resolve(essentialFiles);
+          }
+        });
       }
 
       async function initTerminal() {
@@ -136,20 +193,23 @@ export NVM_DIR="$HOME/.nvm"
           console.log('[Terminal] WTerm initialized');
 
           const parentFS = await waitForParentFS();
-          const files = await loadSharedFiles(parentFS);
+          let files;
+          if (parentFS) {
+            files = await loadSharedFiles(parentFS);
+          } else {
+            console.log('[Terminal] Using direct IndexedDB fallback');
+            files = await loadSharedFilesDirect();
+          }
+
+          console.log('[Terminal] Files passed to shell:', Object.keys(files).length);
+          Object.keys(files).forEach(path => console.log('  ', path));
 
           const shell = new BashShell({
-            cwd: '/home/user',
-            greeting: `\x1b[1;32m  Welcome to Webintosh Terminal\x1b[0m
-\x1b[90m  Shared file system active — try: ls /home/user/Applications\x1b[0m
-
-  Try: \x1b[33mls\x1b[0m, \x1b[33mcat\x1b[0m, \x1b[33mcd\x1b[0m, \x1b[33mpwd\x1b[0m
-  Open apps: \x1b[33mopen /home/user/Applications/Safari.app\x1b[0m
-
-`,
+            cwd: '/',
+            greeting: `\x1b[1;32m  Welcome to Webintosh Terminal\x1b[0m\r\n\x1b[90m  Shared file system active — try: ls /Applications\x1b[0m\r\n\r\n  Try: \x1b[33mls\x1b[0m, \x1b[33mcat\x1b[0m, \x1b[33mcd\x1b[0m, \x1b[33mpwd\x1b[0m\r\n  Open apps: \x1b[33mopen /Applications/Safari.app\x1b[0m\r\n\r\n`,
             env: {
               USER: 'user',
-              HOME: '/home/user',
+              HOME: '/',
               EDITOR: 'vim',
               NODE_ENV: 'development',
               TERM: 'xterm-256color',
@@ -160,6 +220,112 @@ export NVM_DIR="$HOME/.nvm"
           await shell.attach(data => term.write(data));
           term.onData = data => shell.handleInput(data);
           console.log('[Terminal] Shell attached and ready');
+
+          // Register custom commands on the internal Bash instance
+          const bash = shell.bash;
+          if (bash) {
+            // Custom 'ls' command that hides Webintosh-internal directories by implementing ls with filtering
+            bash.registerCommand({
+              name: 'ls',
+              trusted: true,
+              execute: async (args, ctx) => {
+                try {
+                  // Parse flags
+                  const showAll = args.includes('-a') || args.includes('--all');
+                  const longFormat = args.includes('-l') || args.includes('--long');
+                  const targetDir = args.find(a => !a.startsWith('-')) || ctx.cwd;
+                  
+                  const stat = await ctx.fs.stat(targetDir);
+                  if (!stat.isDirectory) {
+                    const basename = targetDir.split('/').pop() || targetDir;
+                    return { stdout: basename + '\n', stderr: '', exitCode: 0 };
+                  }
+                  
+                  const entries = await ctx.fs.readdirWithFileTypes(targetDir);
+                  
+                  // Filter: always hide internal dirs; hide dotfiles unless -a
+                  const hiddenDirs = new Set(['bin', 'usr', 'dev', 'proc']);
+                  const hiddenFiles = new Set(['.ssh', '.bashrc', '.gitconfig', '.keep']);
+                  
+                  const filtered = entries.filter(e => {
+                    if (hiddenDirs.has(e.name)) return false;
+                    if (!showAll && hiddenFiles.has(e.name)) return false;
+                    if (!showAll && e.name.startsWith('.')) return false;
+                    return true;
+                  });
+                  
+                  filtered.sort((a, b) => {
+                    if (a.isDirectory !== b.isDirectory) return a.isDirectory ? -1 : 1;
+                    return a.name.localeCompare(b.name);
+                  });
+                  
+                  if (longFormat) {
+                    // Long format output
+                    const lines = filtered.map(e => {
+                      const perms = e.isDirectory ? 'drwxr-xr-x' : (e.isSymbolicLink ? 'lrwxrwxrwx' : '-rw-r--r--');
+                      const name = e.name + (e.isDirectory ? '/' : (e.isSymbolicLink ? '@' : ''));
+                      return `${perms} 1 user user 0 Jan 1 00:00 ${name}`;
+                    });
+                    return { stdout: lines.join('\n') + '\n', stderr: '', exitCode: 0 };
+                  } else {
+                    // Simple format with colors
+                    const output = filtered.map(e => {
+                      if (e.isDirectory) return '\x1b[1;34m' + e.name + '\x1b[0m/';
+                      if (e.isSymbolicLink) return '\x1b[36m' + e.name + '\x1b[0m@';
+                      return e.name;
+                    }).join('  ');
+                    return { stdout: output + '\n', stderr: '', exitCode: 0 };
+                  }
+                } catch (e) {
+                  return { stdout: '', stderr: `ls: ${e.message}\n`, exitCode: 1 };
+                }
+              }
+            });
+
+            // Custom 'open' command to launch macOS apps from .app files
+            bash.registerCommand({
+              name: 'open',
+              trusted: true,
+              execute: async (args, ctx) => {
+                if (args.length === 0) {
+                  return { stdout: '', stderr: 'open: missing file operand\n', exitCode: 1 };
+                }
+                const targetPath = args[0];
+                let appId = null;
+                try {
+                  if (window.parent && window.parent.FS) {
+                    const db = await window.parent.FS.openDb();
+                    const item = await window.parent.FS.getItem(db, targetPath);
+                    if (item && item.appId) appId = item.appId;
+                  }
+                } catch (e) {
+                  console.warn('[Terminal] Failed to lookup appId:', e);
+                }
+                if (appId) {
+                  try {
+                    if (window.parent && typeof window.parent.OpenApp === 'function') {
+                      const img = window.parent.document.querySelector(`.icns img[alt="${appId}"]`);
+                      if (img) {
+                        const zIndex = window.parent.getNextWindowZIndex ? window.parent.getNextWindowZIndex() : 100;
+                        window.parent.OpenApp(img, zIndex);
+                        return { stdout: `Opening ${appId}...\n`, stderr: '', exitCode: 0 };
+                      }
+                    }
+                  } catch (e) {
+                    console.error('[Terminal] Failed to launch app:', e);
+                  }
+                  return { stdout: '', stderr: `open: failed to launch ${appId}\n`, exitCode: 1 };
+                }
+                try {
+                  const fs = ctx.fs;
+                  const content = await fs.readFile(targetPath);
+                  return { stdout: content + '\n', stderr: '', exitCode: 0 };
+                } catch (e) {
+                  return { stdout: '', stderr: `open: ${targetPath}: No such file or directory\n`, exitCode: 1 };
+                }
+              }
+            });
+          }
         } catch (e) {
           console.error('[Terminal] Fatal error:', e);
           const termEl = document.getElementById('terminal');

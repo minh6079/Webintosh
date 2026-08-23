@@ -391,6 +391,80 @@ async function deleteNote(id) {
 //save notes to localStorage
 function saveNotes() {
     localStorage.setItem('notes', JSON.stringify(notes));
+    // Auto-sync to shared FS
+    syncNotesToFinder();
+}
+
+async function syncNotesToFinder() {
+    try {
+        const fs = window.parent.FS;
+        if (!fs) return;
+        
+        const db = await fs.openDb();
+        await fs.seedIfNeeded(db);
+        
+        // Get existing note files in /Notes
+        const items = await fs.listAll(db);
+        const noteFiles = items.filter(item => 
+            item.type === 'file' && 
+            item.parentPath === '/Notes' && 
+            (item.name.endsWith('.md') || item.name.endsWith('.txt'))
+        );
+        
+        // Create a map of existing note files by their content hash or ID
+        const existingFiles = new Map();
+        for (const file of noteFiles) {
+            if (file.content !== undefined) {
+                existingFiles.set(file.content, file.path);
+            } else if (file.data && typeof file.data.text === 'function') {
+                try {
+                    const content = await file.data.text();
+                    existingFiles.set(content, file.path);
+                } catch (e) {}
+            }
+        }
+        
+        // Sync each note to FS
+        for (const note of notes) {
+            const mdContent = `# ${note.title}\n\n${note.content}`;
+            const existingPath = existingFiles.get(mdContent);
+            
+            if (existingPath) {
+                // Note already exists, update modified time
+                const item = await fs.getItem(db, existingPath);
+                if (item) {
+                    item.modifiedAt = Date.now();
+                    item.content = mdContent;
+                    await fs.putItem(db, item);
+                }
+                existingFiles.delete(mdContent);
+            } else {
+                // Create new note file
+                const safeTitle = (note.title || 'Untitled').trim().replace(/[\\/:*?"<>|]/g, '-');
+                const baseName = `${safeTitle}.md`;
+                const uniquePath = await fs.ensureUniquePath(db, '/Notes', baseName);
+                await fs.putItem(db, {
+                    path: uniquePath,
+                    parentPath: '/Notes',
+                    name: uniquePath.split('/').pop(),
+                    type: 'file',
+                    mime: 'text/markdown',
+                    kind: 'Markdown file',
+                    size: mdContent.length,
+                    createdAt: Date.now(),
+                    modifiedAt: Date.now(),
+                    content: mdContent
+                });
+            }
+        }
+        
+        // Delete orphaned note files (notes that no longer exist)
+        for (const [content, path] of existingFiles) {
+            await fs.deleteItem(db, path);
+        }
+    } catch (e) {
+        console.warn('[Notes] Failed to sync to Finder:', e);
+    }
 }
 
 function syncNotesFromStorage() {
@@ -402,88 +476,61 @@ function syncNotesFromStorage() {
     renderNotes();
 }
 
-const FINDER_DB_NAME = 'webintosh-finder';
-const FINDER_DB_VERSION = 1;
-
-function openFinderDbForNotes() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(FINDER_DB_NAME, FINDER_DB_VERSION);
-        request.onupgradeneeded = function (event) {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains('items')) {
-                const store = db.createObjectStore('items', { keyPath: 'path' });
-                store.createIndex('parentPath', 'parentPath', { unique: false });
-                store.createIndex('modifiedAt', 'modifiedAt', { unique: false });
-                store.createIndex('name', 'name', { unique: false });
-            }
-        };
-        request.onsuccess = function () {
-            resolve(request.result);
-        };
-        request.onerror = function () {
-            reject(request.error);
-        };
-    });
-}
-
 function sanitizeFileName(name) {
     const cleaned = (name || '').trim().replace(/[\\/:*?"<>|]/g, '-');
     return cleaned.length ? cleaned : `Note-${Date.now()}`;
 }
 
 async function exportNoteToFinder(note) {
-    const db = await openFinderDbForNotes();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction('items', 'readwrite');
-        const store = tx.objectStore('items');
-        const request = store.getAll();
-        request.onsuccess = function () {
-            const items = request.result || [];
-            const now = Date.now();
-            const usedPaths = new Set(items.map((item) => item.path));
-            if (!usedPaths.has('/Notes')) {
-                store.add({
-                    path: '/Notes',
-                    parentPath: '/',
-                    name: 'Notes',
-                    type: 'folder',
-                    kind: 'Folder',
-                    size: 0,
-                    createdAt: now,
-                    modifiedAt: now
-                });
-                usedPaths.add('/Notes');
-            }
-            const baseName = `${sanitizeFileName(note.title)}.txt`;
-            let suffix = 0;
-            let candidate = `/Notes/${baseName}`;
-            while (usedPaths.has(candidate)) {
-                suffix += 1;
-                const nextName = baseName.replace(/\.txt$/i, ` (${suffix}).txt`);
-                candidate = `/Notes/${nextName}`;
-            }
-            const name = candidate.split('/').pop();
-            const blob = new Blob([note.content || ''], { type: 'text/plain' });
-            const data = typeof File !== 'undefined' ? new File([blob], name, { type: 'text/plain', lastModified: now }) : blob;
-            store.put({
-                path: candidate,
-                parentPath: '/Notes',
-                name,
-                type: 'file',
-                mime: 'text/plain',
-                kind: 'Text file',
-                size: blob.size,
-                createdAt: now,
-                modifiedAt: now,
-                data
+    try {
+        const fs = window.parent.FS;
+        if (!fs) {
+            throw new Error('Shared FS not available');
+        }
+        const db = await fs.openDb();
+        await fs.seedIfNeeded(db);
+        
+        const items = await fs.listAll(db);
+        const usedPaths = new Set(items.map(item => item.path));
+        
+        if (!usedPaths.has('/Notes')) {
+            await fs.putItem(db, {
+                path: '/Notes',
+                parentPath: '/',
+                name: 'Notes',
+                type: 'folder',
+                kind: 'Folder',
+                size: 0,
+                createdAt: Date.now(),
+                modifiedAt: Date.now()
             });
-        };
-        request.onerror = function () {
-            reject(request.error);
-        };
-        tx.oncomplete = resolve;
-        tx.onerror = reject;
-    });
+            usedPaths.add('/Notes');
+        }
+        
+        const safeTitle = sanitizeFileName(note.title);
+        const baseName = `${safeTitle}.md`;
+        const uniquePath = await fs.ensureUniquePath(db, '/Notes', baseName);
+        const name = uniquePath.split('/').pop();
+        
+        const mdContent = `# ${note.title}\n\n${note.content}`;
+        await fs.putItem(db, {
+            path: uniquePath,
+            parentPath: '/Notes',
+            name,
+            type: 'file',
+            mime: 'text/markdown',
+            kind: 'Markdown file',
+            size: mdContent.length,
+            createdAt: Date.now(),
+            modifiedAt: Date.now(),
+            content: mdContent
+        });
+        
+        return uniquePath;
+    } catch (e) {
+        console.error('[Notes] Export to Finder failed:', e);
+        throw e;
+    }
 }
 
 //search

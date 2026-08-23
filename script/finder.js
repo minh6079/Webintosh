@@ -244,11 +244,37 @@ async function ensureFolderInStore(store, folderPath, parentPath, name, now) {
 }
 
 async function addFilesToDb(db, parentPath, files) {
-    const tx = db.transaction("items", "readwrite");
-    const store = tx.objectStore("items");
+    const fileList = Array.from(files);
     const now = Date.now();
 
-    for (const file of Array.from(files)) {
+    // Pre-read text content for text files before the transaction
+    const textFiles = [];
+    const otherFiles = [];
+    for (const file of fileList) {
+        const mime = file.type || "application/octet-stream";
+        if (mime.startsWith("text/") || mime === "application/json" || mime === "application/javascript" || mime === "text/javascript" || mime === "text/css") {
+            textFiles.push(file);
+        } else {
+            otherFiles.push(file);
+        }
+    }
+
+    // Read text content for text files
+    const textContents = new Map();
+    for (const file of textFiles) {
+        try {
+            const content = await file.text();
+            textContents.set(file, content);
+        } catch (e) {
+            console.warn('[Finder] Failed to read text file:', file.name, e);
+            textContents.set(file, "");
+        }
+    }
+
+    const tx = db.transaction("items", "readwrite");
+    const store = tx.objectStore("items");
+
+    for (const file of otherFiles) {
         const relativePath = file.webkitRelativePath && file.webkitRelativePath.includes("/")
             ? file.webkitRelativePath
             : file.name;
@@ -281,6 +307,42 @@ async function addFilesToDb(db, parentPath, files) {
             modifiedAt: file.lastModified || now,
             createdAt: now,
             data: file
+        });
+    }
+
+    for (const file of textFiles) {
+        const relativePath = file.webkitRelativePath && file.webkitRelativePath.includes("/")
+            ? file.webkitRelativePath
+            : file.name;
+        const parts = relativePath.split("/").filter(Boolean);
+        let currentParent = parentPath;
+
+        for (let i = 0; i < parts.length - 1; i += 1) {
+            const folderName = parts[i];
+            const folderPath = `${currentParent === "/" ? "" : currentParent}/${folderName}`;
+            // eslint-disable-next-line no-await-in-loop
+            await ensureFolderInStore(store, folderPath, currentParent, folderName, now);
+            currentParent = folderPath;
+        }
+
+        const fileName = parts[parts.length - 1];
+        // eslint-disable-next-line no-await-in-loop
+        const uniquePath = await ensureUniquePathInStore(store, currentParent, fileName);
+        const name = uniquePath.split("/").pop();
+        const mime = file.type || "text/plain";
+        const kind = "Text file";
+        store.put({
+            path: uniquePath,
+            parentPath: currentParent,
+            name,
+            type: "file",
+            mime,
+            kind,
+            size: file.size,
+            modifiedAt: file.lastModified || now,
+            createdAt: now,
+            data: file,
+            content: textContents.get(file) || ""
         });
     }
 
@@ -329,7 +391,8 @@ async function createTextFile(db, parentPath) {
             size: blob.size,
             createdAt: now,
             modifiedAt: now,
-            data
+            data,
+            content: ""
         });
         request.onsuccess = resolve;
         request.onerror = reject;
@@ -350,10 +413,25 @@ function saveNotesToStorage(nextNotes) {
 
 async function createNoteFromTextFile(item) {
     const notesList = loadNotesFromStorage();
-    const title = item.name.replace(/\.txt$/i, "");
+    let title = "";
     let content = "";
     if (item.data && typeof item.data.text === "function") {
-        content = await item.data.text();
+        const fullText = await item.data.text();
+        // Parse first # heading as title, rest as body
+        const lines = fullText.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (line.startsWith('# ')) {
+                title = line.substring(2).trim();
+                content = lines.slice(i + 1).join('\n').trim();
+                break;
+            }
+        }
+        // If no # heading found, use filename as title and full content as body
+        if (!title) {
+            title = item.name.replace(/\.(txt|md)$/i, "");
+            content = fullText;
+        }
     }
     const newNote = {
         id: Date.now().toString(),
@@ -933,7 +1011,9 @@ function renderPreview(root, item) {
         textBlock.className = "finder-preview-text";
         const showText = async () => {
             try {
-                if (item.data && typeof item.data.text === "function") {
+                if (item.content && typeof item.content === "string") {
+                    textBlock.textContent = item.content;
+                } else if (item.data && typeof item.data.text === "function") {
                     textBlock.textContent = await item.data.text();
                 } else {
                     textBlock.textContent = "Text preview unavailable";

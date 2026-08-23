@@ -328,12 +328,46 @@ async function seedFsIfNeeded(db) {
 }
 
 // Terminal-specific helpers
-async function fsToTerminalFiles(db) {
+// Get all files from shared FS in format expected by just-bash InMemoryFs
+// (just-bash auto-creates parent directories from file paths)
+// Also adds .keep files for empty folders so they appear in terminal
+async function getFilesForTerminal(db) {
     const items = await listAll(db);
     const files = {};
+    const folders = new Set(['/']); // Track all folders
+
+    // First pass: collect all folders from items
     for (const item of items) {
-        if (item.type === "file" && item.content !== undefined) {
-            files[item.path] = item.content;
+        if (item.type === "folder") {
+            folders.add(item.path);
+        } else if (item.type === "file") {
+            // Add parent folders of each file
+            const parts = item.path.split('/').filter(Boolean);
+            for (let i = 1; i <= parts.length; i++) {
+                folders.add('/' + parts.slice(0, i).join('/'));
+            }
+        }
+    }
+
+    // Add .keep files for all folders (including empty ones)
+    // This ensures just-bash creates the directory structure
+    for (const folder of folders) {
+        const keepPath = folder === '/' ? '/.keep' : folder + '/.keep';
+        files[keepPath] = '';
+    }
+
+    // Second pass: add actual file contents
+    for (const item of items) {
+        if (item.type === "file") {
+            if (item.content !== undefined && typeof item.content === "string") {
+                files[item.path] = item.content;
+            } else if (item.data && typeof item.data.text === "function") {
+                try {
+                    files[item.path] = await item.data.text();
+                } catch (e) {
+                    console.warn('[FS] Failed to read file content:', item.path, e);
+                }
+            }
         }
     }
     return files;
@@ -362,5 +396,5 @@ window.FS = {
     ensureUniquePath,
     formatSize,
     launchApp,
-    fsToTerminalFiles
+    getFilesForTerminal
 };
